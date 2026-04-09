@@ -131,7 +131,6 @@
     }
 
     .user-cell { display: flex; flex-direction: column; gap: 2px; }
-
     .amount { font-weight: 500; font-family: 'Courier New', monospace; font-size: 13px; }
     .desc-cell {
       max-width: 200px; overflow: hidden;
@@ -197,7 +196,6 @@
     .divider { border: none; border-top: 0.5px solid var(--border-light); margin: 16px 0; }
     .section-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
 
-    /* Review form inside modal */
     .review-form { margin-top: 12px; }
     .review-form textarea {
       width: 100%;
@@ -230,13 +228,6 @@
       font-family: var(--font); cursor: pointer; transition: opacity 0.1s;
     }
     .btn-approve:hover, .btn-reject:hover, .btn-modify:hover { opacity: 0.85; }
-
-    .audit-item {
-      font-size: 12px; color: var(--text-secondary);
-      padding: 10px 12px; background: var(--bg-secondary);
-      border-radius: var(--radius-md); line-height: 1.6;
-    }
-    .audit-item strong { color: var(--text-primary); font-weight: 500; }
 
     @media (max-width: 600px) {
       .stats-grid { grid-template-columns: 1fr; }
@@ -289,9 +280,7 @@
       Pending
       <span class="tab-count">{{ pending | length }}</span>
     </a>
-    <a class="tab" href="/admin/all-requests">
-      All Requests
-    </a>
+    <a class="tab" href="/admin/all-requests">All Requests</a>
     <a class="tab" href="/admin/audit">
       Audit Log
       <span class="tab-count">{{ audit | length }}</span>
@@ -348,7 +337,6 @@
     const auditedIds = {{ audited_ids | tojson }};
     const isNew      = !auditedIds.includes(r.id);
 
-    // Build the review form — POSTs to /admin/review/<id>
     const reviewForm = `
       <hr class="divider">
       <div class="section-label">Decision</div>
@@ -379,7 +367,7 @@
             <div class="detail-row"><span class="detail-label">Type</span>        <span class="detail-val"><span class="type-badge">${r.type}</span></span></div>
             <div class="detail-row"><span class="detail-label">Category</span>    <span class="detail-val">${r.category}</span></div>
             <div class="detail-row"><span class="detail-label">Amount</span>      <span class="detail-val amount">₹${Number(r.amount).toLocaleString('en-IN')}</span></div>
-            <div class="detail-row"><span class="detail-label">Event</span>        <span class="detail-val" style="color:var(--text-secondary)">${r.event || 'N/A'}</span></div>
+            <div class="detail-row"><span class="detail-label">Event</span>       <span class="detail-val" style="color:var(--text-secondary)">${r.event || 'N/A'}</span></div>
             <div class="detail-row"><span class="detail-label">Description</span> <span class="detail-val">${r.description}</span></div>
             <div class="detail-row"><span class="detail-label">Submitted</span>   <span class="detail-val" style="color:var(--text-secondary)">${r.created_at ? r.created_at.slice(0,10) : ''}</span></div>
             ${reviewForm}
