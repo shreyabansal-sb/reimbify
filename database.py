@@ -226,6 +226,37 @@ def get_recent_requests(user_id, limit=4):
     conn.close()
     return [dict(r) for r in requests]
 
+def get_pending_advances(user_id):
+    """
+    Returns all approved advances for a student that
+    have NOT been settled yet — these are the ones where
+    student still needs to upload their bill.
+    Used for the advance tracker on new-request page.
+    
+    How it works: joins requests with advance_settlements.
+    If no settlement row exists for an advance → it's unsettled.
+    LEFT JOIN means we get the advance row even if settlement is NULL.
+    """
+    conn = get_db()
+    advances = conn.execute(
+        """
+        SELECT 
+            r.*,
+            s.settled_amount,
+            s.balance_returned,
+            s.settled_at,
+            CASE WHEN s.id IS NULL THEN 0 ELSE 1 END AS is_settled
+        FROM requests r
+        LEFT JOIN advance_settlements s ON s.advance_request_id = r.id
+        WHERE r.user_id = ?
+        AND r.type = 'advance'
+        AND r.status = 'approved'
+        ORDER BY r.created_at DESC
+        """,
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    return [dict(a) for a in advances]
 
 # ============================================================
 #  BILL FUNCTIONS  (upload bill + Vision API results)
