@@ -1,12 +1,13 @@
----------------------Login.html------------------------------------------*/
+/*---------------------Login.css------------------------------------------*/
+
 /* Body Background with Industrial Grid */
 body.login-body {
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    display: flex;             /* Enable centering logic */
+    justify-content: center;    /* Center horizontally */
+    align-items: center;        /* Center vertically */
+    min-height: 100vh;          /* Force body to take full screen height */
     background-color: #1b1d1c; 
     background-image: 
         linear-gradient(rgba(167, 246, 119, 0.05) 1px, transparent 1px),
@@ -27,6 +28,7 @@ body.login-body {
     text-align: center;
     /* Hard offset shadow */
     box-shadow: 12px 12px 0px #2d4f3c !important; 
+    position: relative; /* Ensures shadow and layout behave */
 }
 
 .login-container h2 {
@@ -101,9 +103,8 @@ body.login-body {
     top: 4px;
     box-shadow: 0px 0px 0px #a7f677 !important;
 }
+
 /*---------------------------------------------------------------------------------*/
-
-
 
 /*--------------------------------Dashboardstudent----------------------------------------------*/
 body {
