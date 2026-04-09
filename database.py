@@ -147,12 +147,14 @@ def create_request(user_id, req_type, amount, category, description, event='N/A'
     Returns the new request's ID so we can attach a bill right after.
     """
     conn = get_db()
-    cursor = conn.execute()
+    # FIXED: Added correct syntax for execute and closed parentheses
+    cursor = conn.execute(
         """
-       INSERT INTO requests (user_id, type, amount, category, event, description, status)
+        INSERT INTO requests (user_id, type, amount, category, event, description, status)
         VALUES (?, ?, ?, ?, ?, ?, 'pending')
         """,
         (user_id, req_type, amount, category, event or 'N/A', description)
+    )
     conn.commit()
     new_id = cursor.lastrowid
     conn.close()
@@ -295,13 +297,12 @@ def update_request_status(request_id, status, admin_id, comment=""):
     conn = get_db()
 
     # Update the request status
-    # updated_at set here manually because SQLite has no auto-update triggers
     conn.execute(
         "UPDATE requests SET status = ?, admin_comment = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
         (status, comment, request_id)
     )
 
-    # Write to audit log — always, no exceptions
+    # Write to audit log
     conn.execute(
         """
         INSERT INTO audit_log (request_id, action_by, action, comment)
@@ -310,16 +311,12 @@ def update_request_status(request_id, status, admin_id, comment=""):
         (request_id, admin_id, status, comment)
     )
 
-    # If approved, update the student's budget amount_used.
-    # BUT only for reimbursements — advances don't touch the budget here.
-    # Advances update the budget later in settle_advance() using the actual
-    # settled_amount (what was really spent), not the original requested amount.
     if status == 'approved':
-        req_type = conn.execute(
+        req_row = conn.execute(
             "SELECT type FROM requests WHERE id = ?", (request_id,)
         ).fetchone()
 
-        if req_type and req_type['type'] == 'reimbursement':
+        if req_row and req_row['type'] == 'reimbursement':
             conn.execute(
                 """
                 UPDATE budgets
@@ -363,27 +360,15 @@ def get_audit_log():
 
 # ============================================================
 #  ADVANCE SETTLEMENT FUNCTIONS
-#  Handles the second step of an advance request
-#  when student got money upfront and now submits the real bill.
 # ============================================================
 
 def settle_advance(advance_request_id, settled_amount):
     """
     Called when a student submits their actual bill after
     receiving an advance.
-
-    Example flow:
-      1. Student requested ₹2000 advance → approved
-      2. Student spent ₹1800, uploads bill
-      3. This function is called with settled_amount=1800
-      4. balance_returned = 2000 - 1800 = ₹200 (student returns this)
-
-    Also updates the budget — uses settled_amount not advance_amount
-    because that's what was actually spent.
     """
     conn = get_db()
 
-    # Get the original advance amount from the requests table
     original = conn.execute(
         "SELECT amount FROM requests WHERE id = ?",
         (advance_request_id,)
@@ -395,9 +380,7 @@ def settle_advance(advance_request_id, settled_amount):
 
     advance_amount   = original['amount']
     balance_returned = max(0, advance_amount - settled_amount)
-    # max(0,...) prevents negative balance if they somehow spent more
 
-    # Insert the settlement record
     conn.execute(
         """
         INSERT INTO advance_settlements
@@ -407,15 +390,11 @@ def settle_advance(advance_request_id, settled_amount):
         (advance_request_id, settled_amount, balance_returned)
     )
 
-    # Mark the original advance request as settled
     conn.execute(
         "UPDATE requests SET status = 'approved' WHERE id = ?",
         (advance_request_id,)
     )
 
-    # Update the student's budget using settled_amount (what they actually spent),
-    # NOT the original advance amount — this is the whole point of the settlement step.
-    # e.g. got ₹2000, spent ₹1800 → only ₹1800 comes off the budget
     conn.execute(
         """
         UPDATE budgets
@@ -432,14 +411,10 @@ def settle_advance(advance_request_id, settled_amount):
 
     conn.commit()
     conn.close()
-    return balance_returned  # return this so app.py can tell student how much to return
+    return balance_returned
 
 
 def get_advance_settlement(advance_request_id):
-    """
-    Fetch the settlement record for a specific advance.
-    Used to show the student how their advance was reconciled.
-    """
     conn = get_db()
     settlement = conn.execute(
         "SELECT * FROM advance_settlements WHERE advance_request_id = ?",
@@ -455,16 +430,9 @@ def is_advance_settled(request_id):
 
 # ============================================================
 #  EXTRA ADMIN FUNCTIONS
-#  These power the finance dashboard — charts, analytics,
-#  department breakdowns. Admin team will use these.
 # ============================================================
 
 def get_all_requests():
-    """
-    ALL requests regardless of status — for admin to see
-    the full picture, not just pending ones.
-    Joins with users table to show student name + department.
-    """
     conn = get_db()
     requests = conn.execute(
         """
@@ -479,17 +447,8 @@ def get_all_requests():
 
 
 def get_spending_analytics():
-    """
-    Overall spending stats for the finance dashboard charts.
-    Returns total approved money, total pending, total rejected
-    and a breakdown by category.
-
-    This is what powers the visual money flow the proposal mentions —
-    admin can see where all the university money is going.
-    """
     conn = get_db()
 
-    # Overall totals by status
     totals = conn.execute(
         """
         SELECT
@@ -501,13 +460,12 @@ def get_spending_analytics():
         """
     ).fetchall()
 
-    # Breakdown by category — which category is spending most
     by_category = conn.execute(
         """
         SELECT
             category,
-            COUNT(*)                                    AS count,
-            SUM(amount)                                 AS total_amount,
+            COUNT(*)                                                    AS count,
+            SUM(amount)                                                 AS total_amount,
             SUM(CASE WHEN status='approved' THEN amount ELSE 0 END) AS approved_amount,
             SUM(CASE WHEN status='pending'  THEN amount ELSE 0 END) AS pending_amount
         FROM requests
@@ -516,7 +474,6 @@ def get_spending_analytics():
         """
     ).fetchall()
 
-    # Month wise spending — for the trend chart
     by_month = conn.execute(
         """
         SELECT
@@ -539,18 +496,13 @@ def get_spending_analytics():
 
 
 def get_department_summary():
-    """
-    Spending breakdown per department — for department-wise
-    reporting in the finance dashboard (mentioned in proposal).
-    Admin can see which department is spending what.
-    """
     conn = get_db()
     summary = conn.execute(
         """
         SELECT
             u.department,
-            COUNT(DISTINCT r.user_id)                               AS student_count,
-            COUNT(r.id)                                             AS request_count,
+            COUNT(DISTINCT r.user_id)                                   AS student_count,
+            COUNT(r.id)                                                 AS request_count,
             SUM(CASE WHEN r.status='approved' THEN r.amount ELSE 0 END) AS approved_total,
             SUM(CASE WHEN r.status='pending'  THEN r.amount ELSE 0 END) AS pending_total
         FROM requests r
@@ -564,12 +516,6 @@ def get_department_summary():
 
 
 def get_all_student_budgets():
-    """
-    Admin view of ALL students' budgets — not just one student.
-    Admin can see everyone's allocated vs used vs remaining.
-    Also flags anyone over 80% so admin is aware too,
-    not just the student getting the guardrail alert.
-    """
     conn = get_db()
     budgets = conn.execute(
         """
@@ -592,26 +538,23 @@ def get_all_student_budgets():
 
 # ============================================================
 #  DATABASE INITIALISER
-#  Called once from app.py on startup.
-#  Creates all tables + inserts sample data if DB doesn't exist.
 # ============================================================
 
 def init_db():
     conn = get_db()
 
-    # create tables
     schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
-    with open(schema_path, 'r') as f:
-        conn.executescript(f.read())
+    if os.path.exists(schema_path):
+        with open(schema_path, 'r') as f:
+            conn.executescript(f.read())
 
-    # check if already seeded
     count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
     if count == 0:
         sample_path = os.path.join(os.path.dirname(__file__), 'sample.sql')
-        with open(sample_path, 'r') as f:
-            conn.executescript(f.read())
+        if os.path.exists(sample_path):
+            with open(sample_path, 'r') as f:
+                conn.executescript(f.read())
 
     conn.commit()
     conn.close()
-
