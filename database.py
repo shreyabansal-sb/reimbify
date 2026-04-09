@@ -141,7 +141,7 @@ def get_request_by_id(request_id, user_id):
     return dict(request) if request else None
 
 
-def create_request(user_id, req_type, amount, category, description):
+def create_request(user_id, req_type, amount, category, description, event='N/A'):
     """
     Insert a new request row.
     Returns the new request's ID so we can attach a bill right after.
@@ -149,11 +149,10 @@ def create_request(user_id, req_type, amount, category, description):
     conn = get_db()
     cursor = conn.execute(
         """
-        INSERT INTO requests (user_id, type, amount, category, description, status)
-        VALUES (?, ?, ?, ?, ?, 'pending')
+       INSERT INTO requests (user_id, type, amount, category, event, description, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'pending')
         """,
-        (user_id, req_type, amount, category, description)
-    )
+        (user_id, req_type, amount, category, event or 'N/A', description)
     conn.commit()
     new_id = cursor.lastrowid
     conn.close()
@@ -277,7 +276,7 @@ def get_all_pending_requests():
     conn = get_db()
     requests = conn.execute(
         """
-        SELECT r.*, u.name AS student_name, u.department
+        SELECT r.*, u.name AS student_name, u.department, u.role AS user_role
         FROM requests r
         JOIN users u ON r.user_id = u.id
         WHERE r.status = 'pending'
