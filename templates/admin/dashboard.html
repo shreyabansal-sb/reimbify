@@ -116,27 +116,37 @@
 
         <h2 style="font-size: 1.4rem; margin-top: 40px; margin-bottom: 20px;">Live Student Budget Monitoring</h2>
         <div class="student-grid">
-            {% for b in all_budgets %}
+            {% for student in all_budgets %}
+            
             <div class="student-card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <h4 style="margin: 0;">{{ b.name }}</h4>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ b.department }}</span>
-                    </div>
-                    <span style="font-weight: bold; font-size: 0.9rem;">₹{{ b.amount_used }} / ₹{{ b.total_allocated }}</span>
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin: 0;">{{ student.name }}</h4>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        {{ student.department }}
+                    </span>
                 </div>
                 
-                <div style="margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                {% for b in student.budgets %}
+                <div style="margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
                         <span>{{ b.category }}</span>
-                        <span style="color: {% if b.percent_used >= 80 %}var(--danger){% else %}var(--primary){% endif %}; font-weight: bold;">{{ b.percent_used }}%</span>
+                        <span style="font-weight: bold;">{{ b.percent_used }}%</span>
                     </div>
+                    
                     <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ b.percent_used }}%; background-color: {% if b.percent_used >= 80 %}var(--danger){% else %}var(--primary){% endif %};"></div>
+                        <div class="progress-bar" style="width: {{ b.percent_used }}%;
+                        background-color: {% if b.percent_used >= 80 %}var(--danger){% else %}var(--primary){% endif %};">
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 0.8rem; margin-top: 4px;">
+                        ₹{{ b.amount_used }} / ₹{{ b.total_allocated }}
                     </div>
                 </div>
+                {% endfor %}
             </div>
             {% endfor %}
+
         </div>
     </div>
 
@@ -177,7 +187,7 @@ fetch('/api/analytics')
             labels: labels,
             datasets: [{
                 data: approved,
-                backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
+                backgroundColor: ['#3b82f6', '#f59e0b', '#10b981','#8b5cf6'],
                 borderWidth: 0
             }]
         },

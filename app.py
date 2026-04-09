@@ -32,7 +32,7 @@ from database import (
     update_request_status,
     # admin — analytics + finance dashboard (the bookkeeper stuff)
     get_audit_log, get_spending_analytics,
-    get_department_summary, get_all_student_budgets
+    get_department_summary, get_all_student_budgets,get_grouped_student_budgets
 )
 
 
@@ -626,7 +626,7 @@ def admin_dashboard():
     # 1. Fetch all the data the template needs
     pending_reqs = get_all_pending_requests()
     audit_logs   = get_audit_log()
-    budgets      = get_all_student_budgets() # You were missing this!
+    budgets      = get_grouped_student_budgets() # You were missing this!
     
     # 2. Map the data to the names used in your HTML template
     return render_template(
@@ -757,7 +757,6 @@ def budget_summary_api():
         "budgets": get_student_budgets(session['user_id'])
     })
 
-
 @app.route('/api/analytics')
 def analytics_api():
     """All analytics as JSON — admin charts can render dynamically from this."""
@@ -769,6 +768,7 @@ def analytics_api():
         "departments": get_department_summary(),
         "budgets":     get_all_student_budgets()
     })
+
 
 
 # ============================================================

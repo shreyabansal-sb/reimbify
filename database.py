@@ -454,6 +454,46 @@ def get_all_requests():
     conn.close()
     return [dict(r) for r in requests]
 
+#for audit log 
+from collections import defaultdict
+
+def get_grouped_student_budgets():
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT 
+            u.id as user_id,
+            u.name,
+            u.department,
+            b.category,
+            b.amount_used,
+            b.total_allocated,
+            ROUND((b.amount_used * 100.0 / b.total_allocated), 1) as percent_used
+        FROM budgets b
+        JOIN users u ON u.id = b.user_id
+    """).fetchall()
+    conn.close()
+
+    grouped = defaultdict(lambda: {
+        "name": "",
+        "department": "",
+        "budgets": []
+    })
+
+    for row in rows:
+        uid = row["user_id"]
+
+        grouped[uid]["name"] = row["name"]
+        grouped[uid]["department"] = row["department"]
+
+        grouped[uid]["budgets"].append({
+            "category": row["category"],
+            "amount_used": row["amount_used"],
+            "total_allocated": row["total_allocated"],
+            "percent_used": row["percent_used"]
+        })
+
+    return list(grouped.values())
+
 
 def get_spending_analytics():
     conn = get_db()
