@@ -1,1 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Requests - Reimbify</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Identical to student/my_requests.html — no style changes */
+        body { 
+            margin: 0; 
+            display: flex; 
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .sidebar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .main-wrapper {
+            margin-left: 260px;
+            flex: 1;
+            width: calc(100% - 260px);
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #334155;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #fca5a5;
+            text-decoration: none;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .filter-btn {
+            cursor: pointer;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            margin: 0 5px;
+            font-size: 0.85rem;
+            color: #475569;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .request-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border-collapse: collapse;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .status-approved { color: #16a34a; font-weight: bold; }
+        .status-rejected { color: #dc2626; font-weight: bold; }
+        .status-pending  { color: #2563eb; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">REIMBIFY</div>
+        
+        <!-- Club nav — all links point to /club/* routes -->
+        <a href="/club/dashboard" class="nav-link">
+            <i class="fas fa-home"></i> Overview
+        </a>
+        <a href="/club/my-requests" class="nav-link">
+            <i class="fas fa-tasks"></i> My Requests
+        </a>
+
+        <a href="/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <div class="header">
+                <div>
+                    <h2 style="margin:0;">My Requests</h2>
+                    <p style="margin:5px 0 0 0; color: #64748b;">Track all your submissions and their status.</p>
+                </div>
+                <!-- Points to club new-request route -->
+                <a href="/club/new-request" class="btn">+ New Request</a>
+            </div>
+
+            <!-- Filter buttons call club_my_requests() in app.py via url_for
+                 ?status= param is read in the route and filters the list in Python -->
+            <div class="filter-section">
+                <span style="color: #475569; font-weight: 500; margin-right: 10px;">Filter By Status:</span>
+                <a href="{{ url_for('club_my_requests', status='all') }}"><button type="button" class="filter-btn">All</button></a>
+                <a href="{{ url_for('club_my_requests', status='pending') }}"><button type="button" class="filter-btn">Pending</button></a>
+                <a href="{{ url_for('club_my_requests', status='approved') }}"><button type="button" class="filter-btn">Approved</button></a>
+                <a href="{{ url_for('club_my_requests', status='rejected') }}"><button type="button" class="filter-btn">Rejected</button></a>
+            </div>
+
+            <!-- requests: filtered list from get_student_requests(user_id)
+                 each row has: id, type, amount, category, event, description,
+                 status, admin_comment, created_at, bill_path -->
+            {% if requests %}
+                {% for r in requests %}
+                <table width="100%" border="0" cellpadding="20" cellspacing="0" class="request-card">
+                    <tr style="background-color: #f1f5f9;">
+                        <td align="left">
+                            <span style="font-size: 1.1rem; color: #1e293b;"><b>{{ r.description or "No description provided" }}</b></span>
+                        </td>
+                        <td align="right">
+                            <span style="font-size: 0.85rem; color: #94a3b8;">{{ r.created_at }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <table width="100%" border="0" cellpadding="8">
+                                <tr>
+                                    <td width="30%" style="color: #64748b;">Type:</td>
+                                    <td><b>{{ r.type | capitalize }}</b></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b;">Category:</td>
+                                    <td><b>{{ r.category }}</b></td>
+                                </tr>
+                                <!-- Event column: clubs always have an event,
+                                     show dash only if somehow N/A -->
+                                <tr>
+                                    <td style="color: #64748b;">Event:</td>
+                                    <td><b>{{ r.event if r.event and r.event != 'N/A' else '—' }}</b></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b;">Amount:</td>
+                                    <td style="font-size: 1.1rem; color: #1e293b;"><b>₹{{ "{:,.2f}".format(r.amount) }}</b></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b;">Status:</td>
+                                    <td class="{% if r.status == 'approved' %}status-approved{% elif r.status == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
+                                        {{ r.status | replace('_', ' ') | upper }}
+                                    </td>
+                                </tr>
+                                
+                                <!-- admin_comment only shows if admin left a note
+                                     stored in requests.admin_comment, set by update_request_status() -->
+                                {% if r.admin_comment %}
+                                <tr>
+                                    <td style="color: #64748b;">Admin Comment:</td>
+                                    <td style="background-color: #fffbeb; border-radius: 4px; padding: 10px; font-style: italic; font-size: 0.9rem;">
+                                        {{ r.admin_comment }}
+                                    </td>
+                                </tr>
+                                {% endif %}
+
+                                <tr>
+                                    <td colspan="2" align="center">
+                                        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+                                        <!-- bill_path: from LEFT JOIN with bills table in get_student_requests()
+                                             None if no bill uploaded yet -->
+                                        {% if r.bill_path %}
+                                            <a href="{{ url_for('static', filename=r.bill_path.replace('static/', '')) }}" target="_blank" style="text-decoration: none;">
+                                                <button type="button" class="filter-btn" style="background: #1e293b; color: white; border: none;">
+                                                    <i class="fas fa-file-invoice"></i> View Uploaded Bill
+                                                </button>
+                                            </a>
+                                        {% else %}
+                                            <span style="font-size: 0.85rem; color: #94a3b8;">No bill attached</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                {% endfor %}
+            {% else %}
+                <div style="background: white; padding: 40px; border-radius: 12px; text-align: center; border: 1px dashed #cbd5e1;">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                    <p style="color: #64748b;">No requests found in this category.</p>
+                </div>
+            {% endif %}
+
+            <footer style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                <p style="font-size: 0.85rem; color: #94a3b8;">
+                    REIMBIFY &bull; Team Technica &copy; 2026 &bull; Smart Campus Hackathon
+                </p>
+            </footer>
+
+        </div>
+    </div>
+
+</body>
+</html>
 
