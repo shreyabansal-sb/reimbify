@@ -38,7 +38,8 @@ INSERT OR IGNORE INTO requests (user_id, type, amount, category, event, descript
 (1, 'reimbursement',  800.0, 'Hospitality', 'N/A', 'Team dinner for Under25 Summit volunteers',  'approved'),
 (1, 'advance',       1500.0, 'Travel',      'N/A', 'Train tickets for college fest outstation',  'pending'),
 (2, 'reimbursement',  500.0, 'Logistics',   'N/A', 'Printed banners for event',                  'rejected'),
-(1, 'advance',       2000.0, 'Logistics',   'N/A', 'Advance for stationery and printing supplies','approved');
+(1, 'advance',       2000.0, 'Logistics',   'N/A', 'Advance for stationery and printing supplies','approved'),
+(2, 'reimbursement', 500.0,  'Travel'   ,   'N/A',  'Transporting research prototype from XYZ university', 'approved');
 
 -- CSTC club requests — all tied to real events
 INSERT OR IGNORE INTO requests (user_id, type, amount, category, event, description, status) VALUES

@@ -145,33 +145,55 @@
     </div>
 
     <script>
-        // Data is hardcoded here, but can also be passed from backend via {{ variables }}
-        const ctxBar = document.getElementById('barChart').getContext('2d');
-        new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: ['Travel', 'Hospitality', 'Logistics'],
-                datasets: [
-                    { label: 'Budget', data: [9000, 3000, 3500], backgroundColor: '#94a3b8' },
-                    { label: 'Spent', data: [2500, 2600, 400], backgroundColor: '#3b82f6' }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
+fetch('/api/analytics')
+.then(res => res.json())
+.then(data => {
 
-        const ctxDonut = document.getElementById('donutChart').getContext('2d');
-        new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Travel', 'Hospitality', 'Logistics'],
-                datasets: [{
-                    data: [2500, 2600, 400],
-                    backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
-                    borderWidth: 0
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
-        });
-    </script>
+    const analytics = data.analytics;
+
+    const labels = analytics.by_category.map(c => c.category);
+    const total = analytics.by_category.map(c => c.total_amount);
+    const approved = analytics.by_category.map(c => c.approved_amount);
+
+    // BAR CHART
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Budget', data: total, backgroundColor: '#94a3b8' },
+                { label: 'Spent', data: approved, backgroundColor: '#3b82f6' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // DONUT CHART
+    const ctxDonut = document.getElementById('donutChart').getContext('2d');
+    new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: approved,
+                backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            cutout: '70%'
+        }
+    });
+
+});
+</script>
 </body>
 </html>
