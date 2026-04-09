@@ -77,14 +77,15 @@ def allowed_file(filename):
 def login_required(role):
     """
     Checks if someone is logged in with the correct role.
-    Use this at the start of any route that needs authentication.
-    Returns True if good, False if they should be redirected.
-
-    Example:
-        if not login_required('student'):
-            return redirect(url_for('login'))
+    Now accepts a single role string OR a list of roles.
+    e.g. login_required('admin')
+         login_required(['student', 'club'])  ← for shared API endpoints
     """
-    return session.get('logged_in') and session.get('role') == role
+    if not session.get('logged_in'):
+        return False
+    if isinstance(role, list):
+        return session.get('role') in role
+    return session.get('role') == role
 
 
 def policy_check(amount, category):
@@ -100,6 +101,19 @@ def policy_check(amount, category):
         return False, "Hospitality claims cannot exceed Rs.2,000."
     if category == "Logistics" and amount > 3000:
         return False, "Logistics claims cannot exceed Rs.3,000."
+    return True, "Claim passed policy validation."
+
+def club_policy_check(amount, category):
+    """
+    Higher policy limits for clubs — they run large events.
+    Called instead of policy_check() when role == 'club'.
+    """
+    if amount > 25000:
+        return False, "Amount exceeds the Rs.25,000 per claim limit for clubs."
+    if category == "Hospitality" and amount > 15000:
+        return False, "Club hospitality claims cannot exceed Rs.15,000."
+    if category == "Logistics" and amount > 10000:
+        return False, "Club logistics claims cannot exceed Rs.10,000."
     return True, "Claim passed policy validation."
 
 
@@ -134,6 +148,8 @@ def login():
     if session.get('logged_in'):
         if session['role'] == 'admin':
             return redirect(url_for('admin_dashboard'))
+        if session['role'] == 'club':
+            return redirect(url_for('club_dashboard'))
         return redirect(url_for('student_dashboard'))
 
     error = None
@@ -154,6 +170,8 @@ def login():
 
             if user['role'] == 'admin':
                 return redirect(url_for('admin_dashboard'))
+            if user['role'] == 'club':
+                return redirect(url_for('club_dashboard'))
             return redirect(url_for('student_dashboard'))
         else:
             error = "Invalid email or password."
@@ -272,6 +290,7 @@ def new_request():
         amount_str  = request.form.get('amount', '').strip()
         category    = request.form.get('category', '').strip().title()  
         description = request.form.get('description', '').strip()
+        event = request.form.get('event', '').strip() or 'N/A'  # blank → stored as N/A
 
         if not req_type or not amount_str or not category:
             error = "Please fill in all required fields."
@@ -295,7 +314,7 @@ def new_request():
                 error = f"Policy check failed: {reason}"
             else:
                 request_id = create_request(
-                    user_id, req_type, amount, category, description
+                    user_id, req_type, amount, category, description, event
                 )
 
                 # Bill upload, reimbursements need it upfront
@@ -408,6 +427,132 @@ def settle_advance_route(advance_request_id):
         pending_count    = pending_count,
         balance_returned = balance_returned,
         error            = error
+    )
+
+
+# ============================================================
+#  CLUB ROUTES
+#  Same logic as student routes — clubs are just users with role='club'.
+#  Separate URL prefix (/club/*) and templates (club/) keep them distinct.
+#  Key difference: uses club_policy_check (higher limits) in new-request.
+# ============================================================
+
+@app.route('/club/dashboard')
+def club_dashboard():
+    if not login_required('club'):
+        return redirect(url_for('login'))
+
+    user_id         = session['user_id']
+    summary         = get_budget_summary(user_id)
+    budgets         = get_student_budgets(user_id)
+    pending_count   = get_pending_requests_count(user_id)
+    stats           = get_request_stats(user_id)
+    recent_requests = get_recent_requests(user_id, limit=4)
+    over_80         = [b for b in budgets if b['percent_used'] >= 80]
+
+    return render_template(
+        'club/dashboard.html',
+        user_name       = session['user_name'],
+        summary         = summary,
+        budgets         = budgets,
+        pending_count   = pending_count,
+        stats           = stats,
+        recent_requests = recent_requests,
+        over_80         = over_80
+    )
+
+
+@app.route('/club/my-requests')
+def club_my_requests():
+    if not login_required('club'):
+        return redirect(url_for('login'))
+
+    user_id       = session['user_id']
+    all_reqs      = get_student_requests(user_id)
+    pending_count = get_pending_requests_count(user_id)
+    stats         = get_request_stats(user_id)
+
+    status_filter = request.args.get('status', 'all')
+    if status_filter != 'all':
+        reqs = [r for r in all_reqs if r['status'] == status_filter]
+    else:
+        reqs = all_reqs
+
+    return render_template(
+        'club/my_requests.html',
+        user_name     = session['user_name'],
+        requests      = reqs,
+        pending_count = pending_count,
+        stats         = stats
+    )
+
+
+@app.route('/club/new-request', methods=['GET', 'POST'])
+def club_new_request():
+    if not login_required('club'):
+        return redirect(url_for('login'))
+
+    user_id       = session['user_id']
+    pending_count = get_pending_requests_count(user_id)
+    budgets       = get_student_budgets(user_id)
+    error         = None
+    success       = None
+
+    if request.method == 'POST':
+        req_type    = request.form.get('type', '').strip()
+        amount_str  = request.form.get('amount', '').strip()
+        category    = request.form.get('category', '').strip().title()
+        description = request.form.get('description', '').strip()
+        event       = request.form.get('event', '').strip() or 'N/A'
+
+        if not req_type or not amount_str or not category:
+            error = "Please fill in all required fields."
+        else:
+            try:
+                amount = float(amount_str)
+            except ValueError:
+                error = "Amount must be a valid number."
+                return render_template('club/new_request.html',
+                                       user_name=session['user_name'],
+                                       budgets=budgets,
+                                       pending_count=pending_count,
+                                       error=error)
+
+            # Clubs get higher limits — separate policy function
+            passed, reason = club_policy_check(amount, category)
+
+            if not passed:
+                error = f"Policy check failed: {reason}"
+            else:
+                request_id = create_request(
+                    user_id, req_type, amount, category, description, event
+                )
+
+                if req_type == 'reimbursement' and 'bill' in request.files:
+                    file = request.files['bill']
+                    if file and file.filename != '' and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        filename = f"req_{request_id}_{filename}"
+                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        file.save(filepath)
+                        save_bill(request_id=request_id,
+                                  file_path=filepath, is_manual=True)
+                elif req_type == 'advance' and 'bill' in request.files \
+                        and request.files['bill'].filename != '':
+                    success = (f"Request #{request_id} submitted! Status: Pending review. "
+                               f"(Bill not saved — for advances, submit bill after "
+                               f"spending via 'Settle Advance'.)")
+
+                if not success:
+                    success = f"Request #{request_id} submitted! Status: Pending review."
+
+    return render_template(
+        'club/new_request.html',
+        user_name     = session['user_name'],
+        budgets       = budgets,
+        pending_count = pending_count,
+        error         = error,
+        success       = success
     )
 
 
