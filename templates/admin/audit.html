@@ -9,71 +9,77 @@
             --bg-color: #f0f2f5;
             --sidebar-bg: #1e293b;
             --card-bg: #ffffff;
+            --primary: #3b82f6;
+            --danger: #ef4444;
             --text-main: #1e293b;
             --text-muted: #64748b;
-            --danger: #ef4444;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; display: flex; }
 
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR (matches dashboard exactly) --- */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; position: fixed; height: 100vh; }
         .sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { text-decoration: none; color: #cbd5e1; padding: 12px 15px; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+        .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+        .nav-link.active { background: rgba(255,255,255,0.13); color: white; }
+        .nav-link .nav-left { display: flex; align-items: center; gap: 10px; }
+        .badge { background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; }
 
-        .nav-link { text-decoration: none; color: #cbd5e1; padding: 12px 15px; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; transition: all 0.2s; }
-        .nav-link.active { background: rgba(255, 255, 255, 0.1); color: white; }
-        .nav-link i { margin-right: 10px; }
-
+        /* --- MAIN --- */
         .main-content { margin-left: 260px; flex: 1; padding: 40px; }
 
         .table-container { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid #edf2f7; font-weight: 600; }
+        th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid #edf2f7; font-weight: 600; font-size: 0.85rem; }
         td { padding: 15px; border-bottom: 1px solid #f7fafc; font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafaf8; }
 
-        .status-pill { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+        .status-pill { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; }
         .approved { background: #dcfce7; color: #15803d; }
         .rejected { background: #fee2e2; color: #b91c1c; }
         .modification_requested { background: #fef3c7; color: #92400e; }
 
-        .search-bar {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            margin-bottom: 4px;
-        }
+        .search-bar { display: flex; gap: 12px; margin-top: 20px; margin-bottom: 4px; }
         .search-bar input {
-            flex: 1;
-            height: 38px;
-            padding: 0 14px;
-            font-size: 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            outline: none;
+            flex: 1; height: 38px; padding: 0 14px; font-size: 14px;
+            border: 1px solid #e2e8f0; border-radius: 8px; outline: none; font-family: inherit;
         }
         .search-bar input:focus { border-color: #94a3b8; }
         .search-bar select {
-            height: 38px;
-            padding: 0 12px;
-            font-size: 13px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            color: #555;
-            cursor: pointer;
-            outline: none;
+            height: 38px; padding: 0 12px; font-size: 13px;
+            border: 1px solid #e2e8f0; border-radius: 8px;
+            color: #555; cursor: pointer; outline: none; font-family: inherit;
         }
+
+        .empty { text-align: center; padding: 3rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
         <h2><i class="fas fa-university"></i> Reimbify</h2>
 
-        <a href="/admin/dashboard"    class="nav-link"><span><i class="fas fa-chart-line"></i> Dashboard</span></a>
-        <a href="/admin/all-requests" class="nav-link"><span><i class="fas fa-clock"></i> All Requests</span></a>
-        <a href="/admin/audit"        class="nav-link active"><span><i class="fas fa-history"></i> Audit History</span></a>
-        <a href="/admin/analytics"    class="nav-link"><span><i class="fas fa-chart-bar"></i> Analytics</span></a>
+        <a href="/admin/dashboard" class="nav-link">
+            <span class="nav-left"><i class="fas fa-chart-line"></i> Dashboard</span>
+        </a>
+        <a href="{{ url_for('all_requests') }}" class="nav-link">
+            <span class="nav-left"><i class="fas fa-clock"></i> All Requests</span>
+            <span class="badge" id="pending-badge"></span>
+        </a>
+        <a href="/admin/audit" class="nav-link active">
+            <span class="nav-left"><i class="fas fa-history"></i> Audit History</span>
+        </a>
+        <a href="/admin/analytics" class="nav-link">
+            <span class="nav-left"><i class="fas fa-chart-bar"></i> Analytics</span>
+        </a>
 
         <div style="margin-top: auto;">
             <a href="/logout" class="nav-link" style="color: #fca5a5;">
-                <span><i class="fas fa-sign-out-alt"></i> Logout</span>
+                <span class="nav-left"><i class="fas fa-sign-out-alt"></i> Logout</span>
             </a>
         </div>
     </div>
@@ -121,7 +127,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                        <td colspan="6" class="empty">
                             No audit entries yet. Actions you take on requests will appear here.
                         </td>
                     </tr>
