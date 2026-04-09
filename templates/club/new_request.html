@@ -138,11 +138,10 @@
                 <label>Amount</label>
                 <input type="number" name="amount" required>
 
-                <!-- Event field: optional for students, leave blank for N/A -->
+                <!-- Event field: clubs should always specify which event this is for -->
                 <div class="form-group">
-                    <label for="event">Event Name <span style="font-weight:normal; color:#888;">(optional)</span></label>
-                    <input type="text" id="event" name="event"
-                        placeholder="e.g. Tech Fest 2026 — leave blank if not event-related" maxlength="100">
+                    <label for="event">Event Name</label>
+                    <input type="text" id="event" name="event" placeholder="e.g. Code Sprint April 2026" maxlength="100">
                 </div>
 
                 <label>Category</label>
