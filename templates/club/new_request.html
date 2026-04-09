@@ -8,12 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* Sidebar and Layout Logic from Dashboard */
+        /* Identical to student/new_request.html — no style changes */
         body { 
             margin: 0; 
             display: flex; 
             min-height: 100vh;
-            font-family: sans-serif; /* Matching dashboard font */
+            font-family: sans-serif;
         }
 
         .sidebar {
@@ -74,8 +74,7 @@
             gap: 10px;
         }
 
-        /* Specific styles for the New Request forms from original */
-        .alert { color: red; margin-bottom: 15px; }
+        .alert   { color: red;   margin-bottom: 15px; }
         .success { color: green; margin-bottom: 15px; }
         label { font-weight: bold; display: block; margin-top: 10px; }
         input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
@@ -97,6 +96,7 @@
     <div class="sidebar">
         <div class="logo">REIMBIFY</div>
         
+        <!-- Club nav — all links point to /club/* routes -->
         <a href="/club/dashboard" class="nav-link">
             <i class="fas fa-home"></i> Overview
         </a>
@@ -114,17 +114,23 @@
 
             <h2>New Request</h2>
 
+            <!-- error: set in club_new_request() when policy check fails
+                 or a required field is missing -->
             {% if error %}
                 <div class="alert">{{ error }}</div>
             {% endif %}
 
+            <!-- success: set in club_new_request() after create_request() succeeds
+                 contains the new request ID so club can reference it -->
             {% if success %}
                 <div class="success">{{ success }}</div>
             {% endif %}
 
             {% if not extracted_data %}
 
-            <form action="/club/new-requests" method="POST" enctype="multipart/form-data">
+            <!-- POST goes to /club/new-request → club_new_request() in app.py
+                 enctype needed for bill file upload -->
+            <form method="POST" action="/club/new-request" enctype="multipart/form-data">
 
                 <input type="hidden" name="step" value="upload">
 
@@ -138,12 +144,16 @@
                 <label>Amount</label>
                 <input type="number" name="amount" required>
 
-                <!-- Event field: clubs should always specify which event this is for -->
-                <div class="form-group">
-                    <label for="event">Event Name</label>
-                    <input type="text" id="event" name="event" placeholder="e.g. Code Sprint April 2026" maxlength="100">
-                </div>
+                <!-- Event field: prominent for clubs — should always be filled.
+                     Stored in requests.event column. Blank → saved as 'N/A' by app.py.
+                     club_policy_check() in app.py uses amount+category, not event. -->
+                <label for="event">Event Name</label>
+                <input type="text" id="event" name="event"
+                       placeholder="e.g. Code Sprint April 2026"
+                       maxlength="100">
 
+                <!-- budgets: passed from club_new_request() via get_student_budgets(user_id)
+                     only shows categories that exist for this club in the budgets table -->
                 <label>Category</label>
                 <select name="category" required>
                     {% for b in budgets %}
@@ -154,6 +164,9 @@
                 <label>Description</label>
                 <textarea name="description" rows="3"></textarea>
 
+                <!-- billSection hidden for advances via toggleBill()
+                     reimbursements require a bill upfront;
+                     advances submit the bill later via settle-advance -->
                 <div id="billSection">
                     <label>Upload Bill</label>
                     <input type="file" name="bill">
@@ -164,16 +177,19 @@
 
             {% endif %}
 
+            <!-- extracted_data block: future Vision API integration slot
+                 same pattern as student/new_request.html —
+                 keeping it here so the flow works when Vision API is added -->
             {% if extracted_data %}
 
-            <form action="/club/new-requests"  method="POST">
+            <form method="POST" action="/club/new-request">
 
                 <input type="hidden" name="step" value="confirm">
                 <input type="hidden" name="filepath" value="{{ filepath }}">
 
-                <input type="hidden" name="type" value="{{ request.form.type }}">
-                <input type="hidden" name="event" value="{{ request.form.event }}">
-                <input type="hidden" name="category" value="{{ request.form.category }}">
+                <input type="hidden" name="type"        value="{{ request.form.type }}">
+                <input type="hidden" name="event"       value="{{ request.form.event }}">
+                <input type="hidden" name="category"    value="{{ request.form.category }}">
                 <input type="hidden" name="description" value="{{ request.form.description }}">
 
                 {% if extracted_data != "manual" %}
@@ -218,6 +234,8 @@
     </div>
 
     <script>
+    // Hides bill upload section when request type is advance.
+    // Advances don't need a bill upfront — submitted later via /club/settle-advance
     function toggleBill() {
         const type = document.getElementById("type").value;
         const billSection = document.getElementById("billSection");
@@ -232,5 +250,3 @@
 
 </body>
 </html>
-
-
