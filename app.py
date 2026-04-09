@@ -233,7 +233,7 @@ def student_dashboard():
 
 
 @app.route('/student/my-requests')
-def my_requests():
+def student_my_requests():
     """
     Full list of all requests this student has ever made.
     Shows type, amount, category, status, and admin comment.
