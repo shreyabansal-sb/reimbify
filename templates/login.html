@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Reimbify - Login</title>
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <h2>Reimbify Login</h2>
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="name@sau.ac.in" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="login-btn">Sign In</button>
+        </form>
+    </div>
+</body>
