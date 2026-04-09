@@ -1,26 +1,44 @@
 
 /*----------------------Login.html------------------------------------------*/
-
-/* Centering the login box */
-.login-body {
+/* Body Background with Industrial Grid */
+body.login-body {
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
-    background-color: #f4f7f6; /* Light grey background */
-    font-family: sans-serif;
+    background-color: #1b1d1c; 
+    background-image: 
+        linear-gradient(rgba(167, 246, 119, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167, 246, 119, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #e0e4e0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
+/* The Login Card - Matches Indie Poster style */
 .login-container {
-    background: white;
+    background-color: #242725 !important; 
+    border: 2px solid #a7f677 !important;
+    border-radius: 4px;
     padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     width: 350px;
     text-align: center;
+    /* Hard offset shadow */
+    box-shadow: 12px 12px 0px #2d4f3c !important; 
 }
 
+.login-container h2 {
+    color: #8bab8d; /* Muted Olive Green */
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 900;
+    margin-bottom: 30px;
+}
+
+/* Form Layout */
 .input-group {
     text-align: left;
     margin-bottom: 20px;
@@ -28,33 +46,62 @@
 
 .input-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #a7f677; /* Lime Green Labels */
+    font-weight: 800;
 }
 
+/* Styled Inputs */
 .input-group input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    box-sizing: border-box; /* Makes sure padding doesn't break width */
+    padding: 12px;
+    background-color: #1b1d1c;
+    border: 1px solid #2d4f3c;
+    border-radius: 0px; /* Sharp Industrial Edges */
+    color: #ffffff;
+    font-family: inherit;
+    box-sizing: border-box;
 }
 
+.input-group input:focus {
+    outline: none;
+    border-color: #a7f677;
+    box-shadow: 0 0 8px rgba(167, 246, 119, 0.2);
+}
+
+/* 3D Tactile Login Button */
 .login-btn {
     width: 100%;
-    padding: 12px;
-    background-color: #ff69b4; /* Reimbify Pink from your PDF */
-    color: white;
-    border: none;
-    border-radius: 6px;
+    padding: 15px;
+    background-color: #2d4f3c !important; 
+    color: #a7f677 !important; 
+    border: 2px solid #a7f677 !important;
+    border-radius: 0px !important;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
     cursor: pointer;
-    font-size: 16px;
+    position: relative;
+    top: 0;
+    /* 3D Pop Shadow */
+    box-shadow: 6px 6px 0px #a7f677 !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .login-btn:hover {
-    background-color: #ff4da6;
+    top: -3px;
+    background-color: #a7f677 !important;
+    color: #1b1d1c !important;
+    box-shadow: 8px 8px 0px #2596be !important; /* Blue-grey offset on hover */
 }
 
+.login-btn:active {
+    top: 4px;
+    box-shadow: 0px 0px 0px #a7f677 !important;
+}
 /*---------------------------------------------------------------------------------*/
 
 
@@ -207,4 +254,144 @@ body {
     font-weight: 500;
 }
 /*--------------------------------------------------------------------------------------------*/
+/*----------------------Home.html------------------------------------------*/
+/* Pro-Indie Tech Aesthetic: Forest & Lime Palette */
+
+/* General Body Styling with Industrial Grid */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #1b1d1c; 
+    background-image: 
+        linear-gradient(rgba(167, 246, 119, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167, 246, 119, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #e0e4e0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Pulse animation for the Call-to-Action button */
+@keyframes buttonPulse {
+    0% { box-shadow: 8px 8px 0px #a7f677; }
+    50% { box-shadow: 10px 10px 20px rgba(167, 246, 119, 0.3), 8px 8px 0px #a7f677; }
+    100% { box-shadow: 8px 8px 0px #a7f677; }
+}
+
+/* The Main Card - Using Grey and Green Contrast */
+.main-card {
+    background-color: #242725 !important; 
+    border: 2px solid #a7f677 !important; /* Lime Green accent */
+    border-radius: 4px;
+    padding: 65px 40px;
+    margin-top: 50px;
+    /* Forest Green offset shadow from posters */
+    box-shadow: 12px 12px 0px #2d4f3c !important; 
+}
+
+/* Reimbify Title - Muted Olive with Hover effect */
+h1 {
+    color: #8bab8d !important; 
+    font-weight: 900;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-block;
+}
+
+h1:hover {
+    color: #a7f677 !important;
+    text-shadow: 3px 3px 0px #1b1d1c, 6px 6px 0px #2d4f3c;
+    transform: skew(-3deg) scale(1.05);
+    cursor: pointer;
+}
+
+/* Tagline - High Contrast Label */
+i {
+    background-color: #a7f677;
+    color: #1b1d1c !important;
+    padding: 4px 14px;
+    font-style: normal !important;
+    font-weight: 800;
+    letter-spacing: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+/* Forest Green Accent Divider */
+hr {
+    border: none !important;
+    height: 3px !important;
+    background-color: #2d4f3c !important;
+    width: 80px !important;
+    margin: 25px auto !important;
+}
+
+.desc-p {
+    color: #b0b8b0 !important;
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 520px;
+    font-weight: 500;
+}
+
+/* EMPHASIZED GET STARTED BUTTON (Tactile 3D Pop) */
+.tech-button {
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    border-radius: 0px !important;
+    background-color: #2d4f3c !important; 
+    color: #a7f677 !important; 
+    border: 2px solid #a7f677 !important;
+    padding: 22px 70px !important; 
+    font-size: 18px !important; 
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    cursor: pointer;
+    box-shadow: 8px 8px 0px #a7f677 !important; 
+    position: relative;
+    top: 0;
+    animation: buttonPulse 3s infinite ease-in-out;
+}
+
+.tech-button:hover {
+    top: -5px;
+    background-color: #a7f677 !important;
+    color: #1b1d1c !important;
+    box-shadow: 12px 12px 0px #2596be !important; /* Switch to blue-grey shadow on hover */
+    animation: none;
+}
+
+.tech-button:active {
+    top: 4px;
+    box-shadow: 0px 0px 0px #a7f677 !important;
+}
+
+/* Footer Section Styling */
+.footer-nav {
+    border-top: 2px solid #2d4f3c !important;
+    background: #1b1d1c;
+    margin-top: 40px;
+}
+
+b {
+    color: #a7f677;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+font[color="gray"] {
+    color: #4a524a !important;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+a {
+    text-decoration: none;
+}
+/*---------------------------------------------------------------------------------*/
 
