@@ -233,7 +233,7 @@ def student_dashboard():
 
 
 @app.route('/student/my-requests')
-def my_requests():
+def student_my_requests():
     """
     Full list of all requests this student has ever made.
     Shows type, amount, category, status, and admin comment.
@@ -638,7 +638,7 @@ def admin_dashboard():
     )
 
 
-@app.route('/admin/requests')
+@app.route('/admin/request')
 def all_requests():
     """
     Full history — approved, rejected, pending, everything.
@@ -648,7 +648,7 @@ def all_requests():
         return redirect(url_for('login'))
 
     return render_template(
-        'admin/requests.html',
+        'admin/request.html',
         user_name = session['user_name'],
         requests  = get_all_requests()
     )
