@@ -147,7 +147,7 @@ def create_request(user_id, req_type, amount, category, description, event='N/A'
     Returns the new request's ID so we can attach a bill right after.
     """
     conn = get_db()
-    cursor = conn.execute(
+    cursor = conn.execute()
         """
        INSERT INTO requests (user_id, type, amount, category, event, description, status)
         VALUES (?, ?, ?, ?, ?, ?, 'pending')
