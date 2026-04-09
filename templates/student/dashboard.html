@@ -1,1 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Layout logic only */
+        body { 
+            margin: 0; 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .sidebar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .main-wrapper {
+            margin-left: 260px;
+            flex: 1;
+            width: calc(100% - 260px);
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Ensures the button stays on the top right */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #fca5a5;
+            text-decoration: none;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">REIMBIFY</div>
+        
+        <a href="/student/dashboard" class="nav-link">
+            <i class="fas fa-home"></i> Overview
+        </a>
+        <a href="/student/my-requests" class="nav-link">
+            <i class="fas fa-tasks"></i> My Requests
+        </a>
+
+        <a href="/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <div class="header">
+                <h2>Welcome {{ user_name }}!👋</h2>
+                <a href="/student/new-request" class="btn">+ New Request</a>
+            </div>
+
+            {% if over_80 %}
+            <div class="alert">
+                ⚠️ ALERT! You're close to exceeding your budget in
+                {% for b in over_80 %}
+                <strong>{{ b.category }}</strong>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="card-row">
+                <div class="card">
+                    <p>Allocated</p>
+                    <h2>₹{{ summary.total_allocated }}</h2>
+                </div>
+
+                <div class="card">
+                    <p>Spent</p>
+                    <h2>₹{{ summary.total_used }}</h2>
+                </div>
+
+                <div class="card">
+                    <p>Remaining</p>
+                    <h2>₹{{ summary.total_remaining }}</h2>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Budget Breakdown</h3>
+
+                {% for b in budgets %}
+                <div class="budget-card">
+                    <div class="budget-top">
+                        <strong>{{ b.category }}</strong>
+                        <span>{{ b.percent_used }}%</span>
+                    </div>
+
+                    <p>₹{{ b.amount_used }} / ₹{{ b.total_allocated }}</p>
+
+                    <div class="progress">
+                        <div class="progress-bar 
+                            {% if b.percent_used >= 80 %}danger{% endif %}"
+                            style="width: {{ b.percent_used if b.percent_used <= 100 else 100 }}%;">
+                        </div>
+                    </div>
+
+                    {% if b.percent_used >= 80 %}
+                        <p class="warning">⚠️ Nearing limit</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="card-row">
+                <div class="card">
+                    <p>Pending</p>
+                    <h2>{{ stats.pending }}</h2>
+                </div>
+
+                <div class="card">
+                    <p>Approved</p>
+                    <h2>{{ stats.approved }}</h2>
+                </div>
+
+                <div class="card">
+                    <p>Rejected</p>
+                    <h2>{{ stats.rejected }}</h2>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Recent Requests</h3>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for r in recent_requests %}
+                        <tr>
+                            <td>{{ r.type }}</td>
+                            <td>₹{{ r.amount }}</td>
+                            <td>{{ r.category }}</td>
+                            <td>
+                                <span class="
+                                    {% if r.status == 'approved' %}status-approved
+                                    {% elif r.status == 'rejected' %}status-rejected
+                                    {% else %}status-pending{% endif %}
+                                ">
+                                    {{ r.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
 
