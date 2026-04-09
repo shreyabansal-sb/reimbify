@@ -148,10 +148,10 @@
         <div class="logo">REIMBIFY</div>
         
         <!-- Club nav — all links point to /club/* routes -->
-        <a href="/club/dashboard" class="nav-link">
+        <a href="/student/dashboard" class="nav-link">
             <i class="fas fa-home"></i> Overview
         </a>
-        <a href="/club/my-requests" class="nav-link">
+        <a href="/student/my-requests" class="nav-link">
             <i class="fas fa-tasks"></i> My Requests
         </a>
 
@@ -176,10 +176,10 @@
                  ?status= param is read in the route and filters the list in Python -->
             <div class="filter-section">
                 <span style="color: #475569; font-weight: 500; margin-right: 10px;">Filter By Status:</span>
-                <a href="{{ url_for('club_my_requests', status='all') }}"><button type="button" class="filter-btn">All</button></a>
-                <a href="{{ url_for('club_my_requests', status='pending') }}"><button type="button" class="filter-btn">Pending</button></a>
-                <a href="{{ url_for('club_my_requests', status='approved') }}"><button type="button" class="filter-btn">Approved</button></a>
-                <a href="{{ url_for('club_my_requests', status='rejected') }}"><button type="button" class="filter-btn">Rejected</button></a>
+                <a href="{{ url_for('student_my_requests', status='all') }}"><button type="button" class="filter-btn">All</button></a>
+                <a href="{{ url_for('student_my_requests', status='pending') }}"><button type="button" class="filter-btn">Pending</button></a>
+                <a href="{{ url_for('student_my_requests', status='approved') }}"><button type="button" class="filter-btn">Approved</button></a>
+                <a href="{{ url_for('student_my_requests', status='rejected') }}"><button type="button" class="filter-btn">Rejected</button></a>
             </div>
 
             <!-- requests: filtered list from get_student_requests(user_id)
