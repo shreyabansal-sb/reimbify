@@ -1,169 +1,126 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Review Claim</title>
-
+  <title>Review Claim | Reimbify</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      padding: 30px;
-      margin: 0;
-    }
-
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
-
-    h2 {
-      margin-bottom: 20px;
-    }
-
-    .back {
-      display: inline-block;
-      margin-bottom: 15px;
-      text-decoration: none;
-      background: #3b82f6;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-
-    .claim-details p {
-      margin: 10px 0;
-      font-size: 16px;
-    }
-
-    img {
-      width: 100%;
-      margin-top: 10px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .accept {
-      background: green;
-    }
-
-    .reject {
-      background: red;
-    }
-
-    .reject-box {
-      display: none;
-      margin-top: 15px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 90px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      resize: vertical;
-      box-sizing: border-box;
-    }
-
-    #status {
-      margin-top: 15px;
-      font-weight: bold;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f6fb; padding: 30px; margin: 0; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    h2 { margin-bottom: 20px; }
+    .back { display: inline-block; margin-bottom: 15px; text-decoration: none; background: #3b82f6; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+    .claim-details p { margin: 10px 0; font-size: 15px; }
+    img { width: 100%; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; }
+    .buttons { display: flex; gap: 10px; margin-top: 20px; }
+    button { flex: 1; padding: 10px; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 15px; }
+    .approve { background: #16a34a; }
+    .approve:hover { background: #15803d; }
+    .reject  { background: #dc2626; }
+    .reject:hover  { background: #b91c1c; }
+    .changes { background: #4f46e5; }
+    .changes:hover { background: #4338ca; }
+    .action-box { display: none; margin-top: 15px; }
+    .action-box label { font-size: 13px; color: #64748b; display: block; margin-bottom: 6px; }
+    textarea { width: 100%; min-height: 90px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box; font-family: inherit; }
+    .submit-btn { margin-top: 8px; width: 100%; padding: 10px; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; }
+    #status { margin-top: 15px; font-weight: bold; font-size: 14px; }
   </style>
 </head>
-
 <body>
-
 <div class="container">
-  <a href="index.html" class="back">← Back</a>
-
+  <a href="/admin/all-requests" class="back">← Back to All Requests</a>
   <h2>Review Claim</h2>
 
   <div class="claim-details">
     <p><b>ID:</b> <span id="id"></span></p>
     <p><b>Name:</b> <span id="name"></span></p>
+    <p><b>Type:</b> <span id="type"></span></p>
     <p><b>Category:</b> <span id="category"></span></p>
     <p><b>Amount:</b> ₹<span id="amount"></span></p>
-    <p><b>Reason:</b> <span id="reason"></span></p>
+    <p><b>Description:</b> <span id="desc"></span></p>
+    <p><b>Current Status:</b> <span id="current-status"></span></p>
   </div>
 
   <img id="proof" src="" alt="Proof document">
 
   <div class="buttons">
-    <button class="accept" onclick="acceptClaim()">Accept</button>
-    <button class="reject" onclick="showReject()">Reject</button>
+    <button class="approve"  onclick="showBox('approve-box')">✓ Approve</button>
+    <button class="changes"  onclick="showBox('changes-box')">⟳ Request Changes</button>
+    <button class="reject"   onclick="showBox('reject-box')">✕ Reject</button>
   </div>
 
-  <div class="reject-box" id="rejectBox">
-    <textarea id="rejectReason" placeholder="Enter reason"></textarea>
-    <button onclick="rejectClaim()" style="background:red; margin-top:8px;">
-      Submit
-    </button>
+  <!-- Approve confirmation -->
+  <div class="action-box" id="approve-box">
+    <label>Optional note to requester</label>
+    <textarea id="approveNote" placeholder="e.g. Approved. Payment will be processed within 3 working days."></textarea>
+    <button class="submit-btn" style="background:#16a34a" onclick="submitAction('approved')">Confirm Approval</button>
+  </div>
+
+  <!-- Request changes -->
+  <div class="action-box" id="changes-box">
+    <label>Specify what needs to be changed or clarified</label>
+    <textarea id="changesNote" placeholder="e.g. Please attach the original receipt. The amount does not match the invoice."></textarea>
+    <button class="submit-btn" style="background:#4f46e5" onclick="submitAction('modification_requested')">Send Change Request</button>
+  </div>
+
+  <!-- Reject -->
+  <div class="action-box" id="reject-box">
+    <label>Reason for rejection (required)</label>
+    <textarea id="rejectNote" placeholder="e.g. Expense does not fall under reimbursable categories."></textarea>
+    <button class="submit-btn" style="background:#dc2626" onclick="submitAction('rejected')">Confirm Rejection</button>
   </div>
 
   <p id="status"></p>
 </div>
 
 <script>
+  const labels = { approved: '✅ Approved', modification_requested: '🔄 Changes Requested', rejected: '❌ Rejected' };
+
   function loadData() {
-    const params = new URLSearchParams(window.location.search);
-
-    document.getElementById("id").innerText = params.get("id") || "";
-    document.getElementById("name").innerText = params.get("name") || "";
-    document.getElementById("category").innerText = params.get("category") || "";
-    document.getElementById("amount").innerText = params.get("amount") || "";
-    document.getElementById("reason").innerText = params.get("reason") || "";
-    document.getElementById("proof").src =
-      params.get("proof") || "https://via.placeholder.com/600x300?text=No+Proof";
+    const p = new URLSearchParams(window.location.search);
+    document.getElementById('id').innerText            = p.get('id') || '—';
+    document.getElementById('name').innerText          = p.get('name') || '—';
+    document.getElementById('type').innerText          = p.get('type') || '—';
+    document.getElementById('category').innerText      = p.get('category') || '—';
+    document.getElementById('amount').innerText        = p.get('amount') || '—';
+    document.getElementById('desc').innerText          = p.get('desc') || '—';
+    document.getElementById('current-status').innerText = p.get('status') || '—';
+    document.getElementById('proof').src              = p.get('proof') || 'https://via.placeholder.com/600x200?text=No+Proof+Attached';
   }
 
-  function acceptClaim() {
-    document.getElementById("status").innerText = "✅ Claim Approved!";
-    document.getElementById("rejectBox").style.display = "none";
+  function showBox(id) {
+    ['approve-box','changes-box','reject-box'].forEach(b => {
+      document.getElementById(b).style.display = (b === id) ? 'block' : 'none';
+    });
+    document.getElementById('status').innerText = '';
   }
 
-  function showReject() {
-    document.getElementById("rejectBox").style.display = "block";
-  }
-
-  function rejectClaim() {
-    let reason = document.getElementById("rejectReason").value;
-
-    if (reason.trim() === "") {
-      alert("Enter reason!");
-      return;
+  function submitAction(action) {
+    const noteMap = { approved: 'approveNote', modification_requested: 'changesNote', rejected: 'rejectNote' };
+    const note = document.getElementById(noteMap[action]).value.trim();
+    if ((action === 'rejected' || action === 'modification_requested') && note === '') {
+      alert('Please enter a reason before submitting.'); return;
     }
 
-    document.getElementById("status").innerText =
-      "❌ Claim Rejected: " + reason;
+    // POST to your Flask route
+    const id = new URLSearchParams(window.location.search).get('id');
+    fetch('/admin/update-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status: action, note })
+    })
+    .then(r => r.json())
+    .then(() => {
+      document.getElementById('status').innerText = labels[action] + (note ? ': ' + note : '');
+      document.querySelectorAll('.action-box').forEach(b => b.style.display = 'none');
+    })
+    .catch(() => {
+      // fallback if backend not wired yet
+      document.getElementById('status').innerText = labels[action] + (note ? ': ' + note : '');
+    });
   }
 
   window.onload = loadData;
 </script>
-
 </body>
 </html>
-
