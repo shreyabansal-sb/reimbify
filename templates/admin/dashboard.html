@@ -51,16 +51,16 @@
     <div class="sidebar">
         <h2><i class="fas fa-university"></i> Reimbify</h2>
         
-        <a href="/dashboard" class="nav-link active">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link active">
             <span><i class="fas fa-chart-line"></i> Dashboard</span>
         </a>
         
-        <a href="/reimbursementrequest.html" class="nav-link">
+        <a href="{{ url_for('all_requests') }}" class="nav-link">
             <span><i class="fas fa-clock"></i> Reimbursement Requests</span>
             <span class="badge">0</span>
         </a>
 
-        <a href="/audit" class="nav-link">
+        <a href="{{ url_for('admin_audit') }}" class="nav-link">
             <span><i class="fas fa-history"></i> Audit History</span>
         </a>
 
