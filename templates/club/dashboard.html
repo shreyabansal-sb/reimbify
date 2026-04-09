@@ -3,231 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Club Dashboard | Reimbify</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        /* Layout logic only — identical to student/dashboard.html */
-        body { 
-            margin: 0; 
-            display: flex; 
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 260px;
-            background: #1e293b;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            position: fixed;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .sidebar .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: #cbd5e1;
-            padding: 12px 15px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-        }
-
-        .main-wrapper {
-            margin-left: 260px;
-            flex: 1;
-            width: calc(100% - 260px);
-        }
-
-        .container {
-            padding: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #fca5a5;
-            text-decoration: none;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="dashboard-layout">
 
-    <div class="sidebar">
-        <div class="logo">REIMBIFY</div>
-        
-        <!-- Club nav links — point to /club/* routes -->
-        <a href="/club/dashboard" class="nav-link">
-            <i class="fas fa-home"></i> Overview
-        </a>
-        <a href="/club/my-requests" class="nav-link">
-            <i class="fas fa-tasks"></i> My Requests
-        </a>
-
-        <a href="/logout" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-    </div>
-
-    <div class="main-wrapper">
-        <div class="container">
-
-            <div class="header">
-                <!-- user_name passed from club_dashboard() in app.py -->
-                <h2>Welcome {{ user_name }}!👋</h2>
-                <!-- Points to club new-request route -->
-                <a href="/club/new-request" class="btn">+ New Request</a>
+    <nav class="sidebar">
+        <div class="sidebar-content">
+            <div class="logo">REIMBIFY</div>
+            
+            <div class="nav-links">
+                <a href="/club/dashboard" class="nav-link active">
+                    <i class="fas fa-home"></i> <span>Overview</span>
+                </a>
+                <a href="/club/my-requests" class="nav-link">
+                    <i class="fas fa-tasks"></i> <span>My Requests</span>
+                </a>
             </div>
+        </div>
 
-            <!-- over_80: list of budget categories at or above 80% usage
-                 passed from club_dashboard() → same logic as student dashboard -->
+        <a href="/logout" class="logout-zone">
+            <button class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> LOGOUT
+            </button>
+        </a>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="welcome-msg">
+                <h2>Welcome, {{ user_name }}! 👋</h2>
+                <span class="system-status">CLUB PORTAL ACTIVE</span>
+            </div>
+            <a href="/club/new-request" class="btn-action">+ NEW REQUEST</a>
+        </header>
+
+        <div class="dashboard-scroll-container">
+            
             {% if over_80 %}
-            <div class="alert">
-                ⚠️ ALERT! You're close to exceeding your budget in
-                {% for b in over_80 %}
-                <strong>{{ b.category }}</strong>{% if not loop.last %}, {% endif %}
-                {% endfor %}
+            <div class="alert-banner">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>ALERT: Budget critical in {% for b in over_80 %}{{ b.category.upper() }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
             </div>
             {% endif %}
 
-            <!-- summary: total_allocated, total_used, total_remaining
-                 from get_budget_summary(user_id) in database.py -->
-            <div class="card-row">
-                <div class="card">
-                    <p>Allocated</p>
-                    <h2>₹{{ summary.total_allocated }}</h2>
+            <div class="stats-row">
+                <div class="stat-box">
+                    <label>ALLOCATED</label>
+                    <div class="stat-value">₹{{ summary.total_allocated }}</div>
                 </div>
-
-                <div class="card">
-                    <p>Spent</p>
-                    <h2>₹{{ summary.total_used }}</h2>
+                <div class="stat-box">
+                    <label>SPENT</label>
+                    <div class="stat-value">₹{{ summary.total_used }}</div>
                 </div>
-
-                <div class="card">
-                    <p>Remaining</p>
-                    <h2>₹{{ summary.total_remaining }}</h2>
+                <div class="stat-box">
+                    <label>REMAINING</label>
+                    <div class="stat-value neon">₹{{ summary.total_remaining }}</div>
                 </div>
             </div>
 
-            <!-- budgets: list of {category, amount_used, total_allocated, percent_used}
-                 from get_student_budgets(user_id) — works for clubs too, same query -->
-            <div class="section">
-                <h3>Budget Breakdown</h3>
-
-                {% for b in budgets %}
-                <div class="budget-card">
-                    <div class="budget-top">
-                        <strong>{{ b.category }}</strong>
-                        <span>{{ b.percent_used }}%</span>
-                    </div>
-
-                    <p>₹{{ b.amount_used }} / ₹{{ b.total_allocated }}</p>
-
-                    <div class="progress">
-                        <div class="progress-bar 
-                            {% if b.percent_used >= 80 %}danger{% endif %}"
-                            style="width: {{ b.percent_used if b.percent_used <= 100 else 100 }}%;">
+            <section class="content-section">
+                <h3 class="label-heading">BUDGET BREAKDOWN</h3>
+                <div class="budget-list">
+                    {% for b in budgets %}
+                    <div class="progress-card">
+                        <div class="progress-info">
+                            <span class="p-name">{{ b.category }}</span>
+                            <span class="p-pc">{{ b.percent_used }}%</span>
                         </div>
+                        <div class="bar-container">
+                            <div class="bar-fill {% if b.percent_used >= 80 %}warn{% endif %}" 
+                                 style="width: {{ b.percent_used if b.percent_used <= 100 else 100 }}%;">
+                            </div>
+                        </div>
+                        <div class="bar-meta">₹{{ b.amount_used }} / ₹{{ b.total_allocated }}</div>
                     </div>
-
-                    {% if b.percent_used >= 80 %}
-                        <p class="warning">⚠️ Nearing limit</p>
-                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
+            </section>
 
-            <!-- stats: {pending, approved, rejected}
-                 from get_request_stats(user_id) in database.py -->
-            <div class="card-row">
-                <div class="card">
-                    <p>Pending</p>
-                    <h2>{{ stats.pending }}</h2>
+            <div class="stats-row small-stats">
+                <div class="stat-box">
+                    <label>PENDING</label>
+                    <div class="stat-value yellow-text">{{ stats.pending }}</div>
                 </div>
-
-                <div class="card">
-                    <p>Approved</p>
-                    <h2>{{ stats.approved }}</h2>
+                <div class="stat-box">
+                    <label>APPROVED</label>
+                    <div class="stat-value neon">{{ stats.approved }}</div>
                 </div>
-
-                <div class="card">
-                    <p>Rejected</p>
-                    <h2>{{ stats.rejected }}</h2>
+                <div class="stat-box">
+                    <label>REJECTED</label>
+                    <div class="stat-value red-text">{{ stats.rejected }}</div>
                 </div>
             </div>
 
-            <!-- recent_requests: last 4 requests from get_recent_requests(user_id, limit=4)
-                 includes event column — shown so club can see which event each request is for -->
-            <div class="section">
-                <h3>Recent Requests</h3>
-
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Category</th>
-                            <th>Event</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for r in recent_requests %}
-                        <tr>
-                            <td>{{ r.type }}</td>
-                            <td>₹{{ r.amount }}</td>
-                            <td>{{ r.category }}</td>
-                            <!-- event defaults to 'N/A' in DB if not provided -->
-                            <td>{{ r.event if r.event and r.event != 'N/A' else '—' }}</td>
-                            <td>
-                                <span class="
-                                    {% if r.status == 'approved' %}status-approved
-                                    {% elif r.status == 'rejected' %}status-rejected
-                                    {% else %}status-pending{% endif %}
-                                ">
-                                    {{ r.status }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
+            <section class="content-section">
+                <h3 class="label-heading">RECENT CLUB ACTIVITY</h3>
+                <div class="table-frame">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>TYPE</th>
+                                <th>AMOUNT</th>
+                                <th>CATEGORY</th>
+                                <th>EVENT</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in recent_requests %}
+                            <tr>
+                                <td>{{ r.type.upper() }}</td>
+                                <td class="mono">₹{{ r.amount }}</td>
+                                <td>{{ r.category }}</td>
+                                <td>{{ r.event if r.event and r.event != 'N/A' else '—' }}</td>
+                                <td>
+                                    <span class="status-pill {{ r.status }}">
+                                        {{ r.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
-    </div>
-
+    </main>
 </body>
 </html>
