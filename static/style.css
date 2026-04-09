@@ -1,109 +1,118 @@
 /*---------------------Login.css------------------------------------------*/
 
-/* Body Background with Industrial Grid */
+/* Body Background with Industrial Grid - Fixed Centering */
 body.login-body {
     margin: 0;
     padding: 0;
-    display: flex;             /* Enable centering logic */
-    justify-content: center;    /* Center horizontally */
-    align-items: center;        /* Center vertically */
-    min-height: 100vh;          /* Force body to take full screen height */
+    display: flex;             
+    justify-content: center;    
+    align-items: center;        
+    height: 100vh;           
+    width: 100vw;
     background-color: #1b1d1c; 
     background-image: 
         linear-gradient(rgba(167, 246, 119, 0.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(167, 246, 119, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
     color: #e0e4e0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Inter', 'JetBrains Mono', monospace;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;         
 }
 
-/* The Login Card - Matches Indie Poster style */
+/* The Login Card - Broader Layout */
 .login-container {
     background-color: #242725 !important; 
     border: 2px solid #a7f677 !important;
     border-radius: 4px;
-    padding: 40px;
-    width: 350px;
+    padding: 60px 50px;      /* Increased padding for better internal spacing */
+    width: 450px;            /* Broadened as requested */
     text-align: center;
-    /* Hard offset shadow */
     box-shadow: 12px 12px 0px #2d4f3c !important; 
-    position: relative; /* Ensures shadow and layout behave */
+    position: relative;
+    box-sizing: border-box;
 }
 
 .login-container h2 {
-    color: #8bab8d; /* Muted Olive Green */
+    color: #a7f677 !important; 
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 6px;      
     font-weight: 900;
-    margin-bottom: 30px;
+    margin-bottom: 45px;
+    transition: all 0.4s ease;
+    display: inline-block;
+    cursor: default;
+}
+
+/* Glow on Header Hover */
+.login-container h2:hover {
+    color: #ffffff !important;
+    text-shadow: 0px 0px 10px #a7f677, 0px 0px 20px rgba(167, 246, 119, 0.6);
 }
 
 /* Form Layout */
 .input-group {
     text-align: left;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .input-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #a7f677; /* Lime Green Labels */
+    letter-spacing: 3px;
+    color: #a7f677; 
     font-weight: 800;
 }
 
 /* Styled Inputs */
 .input-group input {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background-color: #1b1d1c;
     border: 1px solid #2d4f3c;
-    border-radius: 0px; /* Sharp Industrial Edges */
+    border-radius: 0px; 
     color: #ffffff;
-    font-family: inherit;
+    font-family: 'JetBrains Mono', monospace; 
     box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
 .input-group input:focus {
     outline: none;
     border-color: #a7f677;
-    box-shadow: 0 0 8px rgba(167, 246, 119, 0.2);
+    box-shadow: 0 0 15px rgba(167, 246, 119, 0.2);
 }
 
-/* 3D Tactile Login Button */
+/* Login Button - Green Glow Hover */
 .login-btn {
     width: 100%;
-    padding: 15px;
+    padding: 18px;           /* Slightly taller for the broader box */
     background-color: #2d4f3c !important; 
     color: #a7f677 !important; 
     border: 2px solid #a7f677 !important;
     border-radius: 0px !important;
     font-weight: 900;
+    font-family: inherit;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
     cursor: pointer;
     position: relative;
     top: 0;
-    /* 3D Pop Shadow */
-    box-shadow: 6px 6px 0px #a7f677 !important;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .login-btn:hover {
-    top: -3px;
     background-color: #a7f677 !important;
     color: #1b1d1c !important;
-    box-shadow: 8px 8px 0px #2596be !important; /* Blue-grey offset on hover */
+    box-shadow: 0px 0px 20px rgba(167, 246, 119, 0.5) !important;
 }
 
 .login-btn:active {
-    top: 4px;
-    box-shadow: 0px 0px 0px #a7f677 !important;
+    transform: scale(0.98);
 }
-
 /*---------------------------------------------------------------------------------*/
 
 /*--------------------------------Dashboardstudent----------------------------------------------*/
