@@ -138,6 +138,13 @@
                 <label>Amount</label>
                 <input type="number" name="amount" required>
 
+                <!-- Event field: optional for students, leave blank for N/A -->
+                <div class="form-group">
+                    <label for="event">Event Name <span style="font-weight:normal; color:#888;">(optional)</span></label>
+                    <input type="text" id="event" name="event"
+                        placeholder="e.g. Tech Fest 2026 — leave blank if not event-related" maxlength="100">
+                </div>
+
                 <label>Category</label>
                 <select name="category" required>
                     {% for b in budgets %}
@@ -165,7 +172,8 @@
                 <input type="hidden" name="step" value="confirm">
                 <input type="hidden" name="filepath" value="{{ filepath }}">
 
-                <input type="hidden" name="type" value="reimbursement">
+                <input type="hidden" name="type" value="{{ request.form.type }}">
+                <input type="hidden" name="event" value="{{ request.form.event }}">
                 <input type="hidden" name="category" value="{{ request.form.category }}">
                 <input type="hidden" name="description" value="{{ request.form.description }}">
 
