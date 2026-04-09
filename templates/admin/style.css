@@ -1,0 +1,202 @@
+---------------------------/Admin Dashboard/-------------------------------------------------------------------------------------
+:root {
+    --bg-color: #1b1d1c;
+    --sidebar-bg: #121413;
+    --card-bg: #242725;
+    --primary: #a7f677; /* Lime Green */
+    --accent-blue: #2596be; /* Forest Blue */
+    --danger: #ef4444;
+    --success: #a7f677;
+    --text-main: #e0e4e0;
+    --text-muted: #8bab8d; /* Muted Olive */
+}
+
+/* Base Layout & Industrial Grid */
+body { 
+    font-family: 'Inter', -apple-system, sans-serif; 
+    background-color: var(--bg-color); 
+    background-image: 
+        linear-gradient(rgba(167, 246, 119, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167, 246, 119, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: var(--text-main); 
+    margin: 0; 
+    display: flex; 
+    min-height: 100vh; 
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- SIDEBAR --- */
+.sidebar { 
+    width: 260px; 
+    background: var(--sidebar-bg); 
+    border-right: 1px solid #2d4f3c;
+    color: white; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 20px; 
+    position: fixed; 
+    height: 100vh; 
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.sidebar h2 { 
+    font-size: 1.5rem; 
+    margin-bottom: 30px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 900;
+}
+
+.nav-link { 
+    text-decoration: none; 
+    color: var(--text-muted); 
+    padding: 12px 15px; 
+    border-radius: 4px; 
+    margin-bottom: 5px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    transition: all 0.2s ease; 
+    font-weight: 600;
+}
+
+.nav-link:hover, .nav-link.active { 
+    background: rgba(167, 246, 119, 0.1); 
+    color: var(--primary); 
+    border-left: 3px solid var(--primary);
+}
+
+.badge { 
+    background: var(--accent-blue); 
+    color: #fff; 
+    font-size: 0.75rem; 
+    padding: 2px 8px; 
+    border-radius: 2px; 
+    font-weight: 900;
+    box-shadow: 2px 2px 0px #121413;
+}
+
+/* --- MAIN CONTENT & HEADER --- */
+.main-content { 
+    margin-left: 260px; 
+    flex: 1; 
+    padding: 40px; 
+}
+
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+    border-bottom: 2px solid #2d4f3c; 
+    padding-bottom: 20px; 
+}
+
+h1, h2, h3, h4 { 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+}
+
+/* --- STAT CARDS --- */
+.summary-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px; 
+    margin-bottom: 30px; 
+}
+
+.stat-card { 
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 4px; 
+    border: 1px solid #2d4f3c;
+    box-shadow: 8px 8px 0px rgba(0,0,0,0.3); 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+}
+
+.icon-box { 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 4px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.2rem; 
+    background: #1b1d1c !important; 
+}
+
+.stat-card h3 { 
+    margin: 0; 
+    font-size: 0.75rem; 
+    color: var(--text-muted); 
+}
+
+.stat-card p { 
+    margin: 5px 0 0; 
+    font-size: 1.4rem; 
+    font-weight: 900; 
+    color: #fff; 
+}
+
+/* --- CHARTS --- */
+.charts-grid { 
+    display: grid; 
+    grid-template-columns: 2fr 1fr; 
+    gap: 25px; 
+    margin-bottom: 40px; 
+}
+
+.chart-container { 
+    background: rgba(36, 39, 37, 0.7); 
+    backdrop-filter: blur(8px);
+    padding: 25px; 
+    border-radius: 4px; 
+    height: 350px; 
+    border: 1px solid #2d4f3c;
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.2); 
+}
+
+/* --- STUDENT MONITORING CARDS --- */
+.student-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+    gap: 20px; 
+}
+
+.student-card { 
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 4px; 
+    border: 1px solid #2d4f3c;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.student-card:hover { 
+    transform: translateY(-2px); 
+    border-color: var(--primary); 
+}
+
+/* Progress Bars */
+.progress-container { 
+    background: #121413; 
+    border-radius: 0px; 
+    height: 12px; 
+    margin-top: 10px; 
+    border: 1px solid #2d4f3c; 
+    overflow: hidden; 
+}
+
+.progress-bar { 
+    height: 100%; 
+    border-radius: 0px; 
+    transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
