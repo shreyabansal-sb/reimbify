@@ -255,89 +255,6 @@ body {
 }
 /*--------------------------------------------------------------------------------------------*/
 /*----------------------Home.html------------------------------------------*/
-/* Pro-Indie Tech Aesthetic: Forest & Lime Palette */
-
-/* General Body Styling with Industrial Grid */
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #1b1d1c; 
-    background-image: 
-        linear-gradient(rgba(167, 246, 119, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(167, 246, 119, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    color: #e0e4e0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Pulse animation for the Call-to-Action button */
-@keyframes buttonPulse {
-    0% { box-shadow: 8px 8px 0px #a7f677; }
-    50% { box-shadow: 10px 10px 20px rgba(167, 246, 119, 0.3), 8px 8px 0px #a7f677; }
-    100% { box-shadow: 8px 8px 0px #a7f677; }
-}
-
-/* The Main Card - Using Grey and Green Contrast */
-.main-card {
-    background-color: #242725 !important; 
-    border: 2px solid #a7f677 !important; /* Lime Green accent */
-    border-radius: 4px;
-    padding: 65px 40px;
-    margin-top: 50px;
-    /* Forest Green offset shadow from posters */
-    box-shadow: 12px 12px 0px #2d4f3c !important; 
-}
-
-/* Reimbify Title - Muted Olive with Hover effect */
-h1 {
-    color: #8bab8d !important; 
-    font-weight: 900;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: inline-block;
-}
-
-h1:hover {
-    color: #a7f677 !important;
-    text-shadow: 3px 3px 0px #1b1d1c, 6px 6px 0px #2d4f3c;
-    transform: skew(-3deg) scale(1.05);
-    cursor: pointer;
-}
-
-/* Tagline - High Contrast Label */
-i {
-    background-color: #a7f677;
-    color: #1b1d1c !important;
-    padding: 4px 14px;
-    font-style: normal !important;
-    font-weight: 800;
-    letter-spacing: 4px;
-    font-size: 11px;
-    text-transform: uppercase;
-    display: inline-block;
-    margin-top: 8px;
-}
-
-/* Forest Green Accent Divider */
-hr {
-    border: none !important;
-    height: 3px !important;
-    background-color: #2d4f3c !important;
-    width: 80px !important;
-    margin: 25px auto !important;
-}
-
-.desc-p {
-    color: #b0b8b0 !important;
-    font-size: 16px;
-    line-height: 1.8;
-    max-width: 520px;
-    font-weight: 500;
-}
-
 /* EMPHASIZED GET STARTED BUTTON (Tactile 3D Pop) */
 .tech-button {
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
@@ -357,41 +274,22 @@ hr {
     animation: buttonPulse 3s infinite ease-in-out;
 }
 
+/* Updated Hover State for Extra Emphasis */
 .tech-button:hover {
-    top: -5px;
+    top: -8px; /* Lift it higher */
+    left: -4px; /* Move slightly left to exaggerate the 3D effect */
     background-color: #a7f677 !important;
     color: #1b1d1c !important;
-    box-shadow: 12px 12px 0px #2596be !important; /* Switch to blue-grey shadow on hover */
-    animation: none;
+    /* Massive offset shadow for that "Pro-Indie" poster look */
+    box-shadow: 16px 16px 0px #2d4f3c !important; 
+    transform: scale(1.05); /* Slight growth */
+    animation: none; /* Stop pulsing so the hover state feels solid */
 }
 
+/* Updated Active (Click) State */
 .tech-button:active {
     top: 4px;
-    box-shadow: 0px 0px 0px #a7f677 !important;
+    left: 2px;
+    box-shadow: 2px 2px 0px #a7f677 !important;
+    transform: scale(0.98); /* Squish effect on click */
 }
-
-/* Footer Section Styling */
-.footer-nav {
-    border-top: 2px solid #2d4f3c !important;
-    background: #1b1d1c;
-    margin-top: 40px;
-}
-
-b {
-    color: #a7f677;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-font[color="gray"] {
-    color: #4a524a !important;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-a {
-    text-decoration: none;
-}
-/*---------------------------------------------------------------------------------*/
-
