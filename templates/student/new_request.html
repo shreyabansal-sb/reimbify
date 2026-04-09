@@ -1,1 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Request — Reimbify</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Sidebar and Layout Logic from Dashboard */
+        body { 
+            margin: 0; 
+            display: flex; 
+            min-height: 100vh;
+            font-family: sans-serif; /* Matching dashboard font */
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .sidebar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .main-wrapper {
+            margin-left: 260px;
+            flex: 1;
+            width: calc(100% - 260px);
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #fca5a5;
+            text-decoration: none;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Specific styles for the New Request forms from original */
+        .alert { color: red; margin-bottom: 15px; }
+        .success { color: green; margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        .btn { 
+            background-color: #1e293b; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 15px;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">REIMBIFY</div>
+        
+        <a href="/student/dashboard" class="nav-link">
+            <i class="fas fa-home"></i> Overview
+        </a>
+        <a href="/student/my-requests" class="nav-link">
+            <i class="fas fa-tasks"></i> My Requests
+        </a>
+
+        <a href="/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <h2>New Request</h2>
+
+            {% if error %}
+                <div class="alert">{{ error }}</div>
+            {% endif %}
+
+            {% if success %}
+                <div class="success">{{ success }}</div>
+            {% endif %}
+
+            {% if not extracted_data %}
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <input type="hidden" name="step" value="upload">
+
+                <label>Request Type</label>
+                <select name="type" id="type" required onchange="toggleBill()">
+                    <option value="">Select</option>
+                    <option value="reimbursement">Reimbursement</option>
+                    <option value="advance">Advance</option>
+                </select>
+
+                <label>Amount</label>
+                <input type="number" name="amount" required>
+
+                <label>Category</label>
+                <select name="category" required>
+                    {% for b in budgets %}
+                        <option value="{{ b.category }}">{{ b.category }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Description</label>
+                <textarea name="description" rows="3"></textarea>
+
+                <div id="billSection">
+                    <label>Upload Bill</label>
+                    <input type="file" name="bill">
+                </div>
+
+                <button type="submit" class="btn">Submit</button>
+            </form>
+
+            {% endif %}
+
+            {% if extracted_data %}
+
+            <form method="POST">
+
+                <input type="hidden" name="step" value="confirm">
+                <input type="hidden" name="filepath" value="{{ filepath }}">
+
+                <input type="hidden" name="type" value="reimbursement">
+                <input type="hidden" name="category" value="{{ request.form.category }}">
+                <input type="hidden" name="description" value="{{ request.form.description }}">
+
+                {% if extracted_data != "manual" %}
+
+                    <h3>Detected Details</h3>
+
+                    <label>Amount</label>
+                    <input type="number" name="amount" value="{{ extracted_data.amount }}">
+
+                    <label>Vendor</label>
+                    <input type="text" name="vendor" value="{{ extracted_data.vendor }}">
+
+                    <label>Date</label>
+                    <input type="date" name="date" value="{{ extracted_data.date }}">
+
+                    <input type="hidden" name="is_manual" value="false">
+
+                {% else %}
+
+                    <h3>Enter Bill Details Manually</h3>
+
+                    <label>Amount</label>
+                    <input type="number" name="amount" required>
+
+                    <label>Vendor</label>
+                    <input type="text" name="vendor" required>
+
+                    <label>Date</label>
+                    <input type="date" name="date" required>
+
+                    <input type="hidden" name="is_manual" value="true">
+
+                {% endif %}
+
+                <button type="submit" class="btn">Confirm & Submit</button>
+
+            </form>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+    <script>
+    function toggleBill() {
+        const type = document.getElementById("type").value;
+        const billSection = document.getElementById("billSection");
+
+        if (type === "advance") {
+            billSection.style.display = "none";
+        } else {
+            billSection.style.display = "block";
+        }
+    }
+    </script>
+
+</body>
+</html>
 
