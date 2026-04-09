@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT NOT NULL UNIQUE,               -- login email, must be unique
     password_hash TEXT NOT NULL,                      -- plain text for demo, bcrypt in production
     role          TEXT NOT NULL DEFAULT 'student'
-                  CHECK(role IN ('student','admin')), -- only these two values allowed
+                  CHECK(role IN ('student','club','admin')), 
     department    TEXT,                               -- e.g. Computer Science
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP  -- auto-set when row is created
 );
@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS requests (
                   CHECK(type IN ('reimbursement','advance')),
     amount        REAL    NOT NULL,                   -- amount in rupees
     category      TEXT    NOT NULL,                   -- must match a budget category
+    event         TEXT    DEFAULT'N/A',
     description   TEXT,                              -- what was the expense for
     status        TEXT    NOT NULL DEFAULT 'pending'
                   CHECK(status IN ('pending','approved','rejected','modification_requested')),
