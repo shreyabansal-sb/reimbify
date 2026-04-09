@@ -584,7 +584,7 @@ def admin_dashboard():
     )
 
 
-@app.route('/admin/all-requests')
+@app.route('/admin/requests')
 def all_requests():
     """
     Full history — approved, rejected, pending, everything.
@@ -594,7 +594,7 @@ def all_requests():
         return redirect(url_for('login'))
 
     return render_template(
-        'admin/all_requests.html',
+        'admin/requests.html',
         user_name = session['user_name'],
         requests  = get_all_requests()
     )
