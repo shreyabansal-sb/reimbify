@@ -271,102 +271,156 @@ def my_requests():
 
 @app.route('/student/new-request', methods=['GET', 'POST'])
 def new_request():
-    """
-    GET  → shows the new request form
-    POST → validates, runs policy check, saves to DB, handles bill upload
-    Covers BOTH reimbursement and advance request types.
-    """
+
     if not login_required('student'):
         return redirect(url_for('login'))
 
     user_id       = session['user_id']
     pending_count = get_pending_requests_count(user_id)
-    budgets       = get_student_budgets(user_id)  # for the category dropdown
-    error         = None
-    success       = None
+    budgets       = get_student_budgets(user_id)
+
+    error = None
+    success = None
+    extracted_data = None
+    filepath = None
+
+    # -----------------------------
+    # Filler AI EXTRACTION FUNCTION
+    # -----------------------------
+    def extract_bill_data(filepath):
+        import random
+        if random.choice([True, False]):
+            return {
+                "amount": random.randint(500, 2000),
+                "vendor": "Demo Vendor",
+                "date": "2026-04-08"
+            }
+        return None
 
     if request.method == 'POST':
-        req_type    = request.form.get('type', '').strip()
-        amount_str  = request.form.get('amount', '').strip()
-        category    = request.form.get('category', '').strip().title()  
-        description = request.form.get('description', '').strip()
-        event = request.form.get('event', '').strip() or 'N/A'  # blank → stored as N/A
 
-        if not req_type or not amount_str or not category:
-            error = "Please fill in all required fields."
-        else:
-            try:
-                amount = float(amount_str)
-            except ValueError:
-                error = "Amount must be a valid number."
-                return render_template('student/new_request.html',
-                                       user_name=session['user_name'],
-                                       budgets=budgets,
-                                       pending_count=pending_count,
-                                       error=error)
+        step = request.form.get('step')
 
-            # Policy check: auto-validates before reaching admin
-            # "Policy Validation" our special feature from the proposal
+        # =====================================
+        # STEP 1 → Upload + Extract
+        # =====================================
+        if step == "upload":
+
+            req_type    = request.form.get('type', '').strip()
+            amount_str  = request.form.get('amount', '').strip()
+            category    = request.form.get('category', '').strip().title()
+            description = request.form.get('description', '').strip()
+            event       = request.form.get('event', '').strip() or 'N/A'
+
+            if not req_type or not amount_str or not category:
+                error = "Please fill all required fields."
+
+            else:
+                try:
+                    amount = float(amount_str)
+                except ValueError:
+                    error = "Invalid amount."
+                    return render_template(
+                        'student/new_request.html',
+                        user_name=session['user_name'],
+                        budgets=budgets,
+                        pending_count=pending_count,
+                        error=error
+                    )
+
+                # -----------------------------
+                # ADVANCE → DIRECT FLOW
+                # -----------------------------
+                if req_type == "advance":
+
+                    passed, reason = policy_check(amount, category)
+
+                    if not passed:
+                        error = f"Policy failed: {reason}"
+                    else:
+                        request_id = create_request(
+                            user_id, req_type, amount, category, description, event
+                        )
+                        success = f"Advance request #{request_id} submitted!"
+
+                # -----------------------------
+                # REIMBURSEMENT → NEED BILL
+                # -----------------------------
+                else:
+
+                    file = request.files.get('bill')
+
+                    if not file or file.filename == '':
+                        error = "Please upload a bill."
+                    else:
+                        filename = secure_filename(file.filename)
+                        filename = f"temp_{filename}"
+                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        file.save(filepath)
+
+                        extracted = extract_bill_data(filepath)
+
+                        if extracted:
+                            extracted_data = extracted
+                        else:
+                            extracted_data = "manual"
+
+                        # 👇 VERY IMPORTANT: return SAME page with data
+                        return render_template(
+                            'student/new_request.html',
+                            user_name=session['user_name'],
+                            budgets=budgets,
+                            pending_count=pending_count,
+                            extracted_data=extracted_data,
+                            filepath=filepath,
+                            form_data=request.form
+                        )
+
+        # =====================================
+        # STEP 2 → CONFIRM DATA
+        # =====================================
+        elif step == "confirm":
+
+            req_type    = request.form.get('type')
+            category    = request.form.get('category')
+            description = request.form.get('description')
+            event       = request.form.get('event')
+
+            amount  = float(request.form.get('amount'))
+            vendor  = request.form.get('vendor')
+            date    = request.form.get('date')
+            filepath = request.form.get('filepath')
+
+            is_manual = request.form.get('is_manual') == "true"
+
+            #POLICY CHECK HERE
             passed, reason = policy_check(amount, category)
 
             if not passed:
-                # Instantly rejected with clear reason — no admin needed
-                error = f"Policy check failed: {reason}"
+                error = f"Policy failed: {reason}"
             else:
                 request_id = create_request(
                     user_id, req_type, amount, category, description, event
                 )
 
-                # Bill upload, reimbursements need it upfront
-                # Advances submit bill later via /settle-advance
-                if req_type == 'reimbursement' and 'bill' in request.files:
-                    file = request.files['bill']
-                    if file and file.filename != '' and allowed_file(file.filename):
-                        filename = secure_filename(file.filename)
-                        filename = f"req_{request_id}_{filename}"
-                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        file.save(filepath)
-                        # Vision API extraction slots in here later
-                        save_bill(request_id=request_id,
-                                  file_path=filepath, is_manual=True)
-                elif req_type == 'advance' and 'bill' in request.files \
-                        and request.files['bill'].filename != '':
-                    # Student uploaded a bill with an advance, we don't save it,
-                    # but tell them where to actually submit it so it's not confusing
-                    success = f"Request #{request_id} submitted! Status: Pending review. " \
-                              f"(Your bill was not saved- for advances, submit your bill " \
-                              f"after spending via 'Settle Advance'.)"
+                save_bill(
+                    request_id=request_id,
+                    file_path=filepath,
+                    extracted_amount=amount,
+                    extracted_vendor=vendor,
+                    extracted_date=date,
+                    is_manual=is_manual
+                )
 
-                success = f"Request #{request_id} submitted! Status: Pending review."
+                success = f"Request #{request_id} submitted successfully!"
 
     return render_template(
         'student/new_request.html',
-        user_name     = session['user_name'],
-        budgets       = budgets,
-        pending_count = pending_count,
-        error         = error,
-        success       = success
-    )
-
-
-@app.route('/student/profile')
-def student_profile():
-    """Student profile — name, department, full budget breakdown."""
-    if not login_required('student'):
-        return redirect(url_for('login'))
-
-    user_id       = session['user_id']
-    budgets       = get_student_budgets(user_id)
-    summary       = get_budget_summary(user_id)
-    pending_count = get_pending_requests_count(user_id)
-
-    return render_template(
-        'student/profile.html',
-        user_name     = session['user_name'],
-        user_id       = user_id,
-        budgets       = budgets,
-        summary       = summary,
-        pending_count = pending_count
+        user_name=session['user_name'],
+        budgets=budgets,
+        pending_count=pending_count,
+        error=error,
+        success=success
     )
 
 
