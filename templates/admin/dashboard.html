@@ -1,1 +1,362 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Reimbursement Requests</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary:   #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary:  #eeede9;
+      --text-primary:   #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --border-light:  rgba(0,0,0,0.10);
+      --border-medium: rgba(0,0,0,0.18);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .portal { max-width: 960px; margin: 0 auto; }
+
+    .header { margin-bottom: 1.75rem; }
+    .header h1 { font-size: 22px; font-weight: 500; }
+    .header p  { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.75rem;
+    }
+    .stat-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+    .stat-value { font-size: 26px; font-weight: 500; }
+    .stat-value.new      { color: #185FA5; }
+    .stat-value.pending  { color: #BA7517; }
+    .stat-value.rejected { color: #A32D2D; }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 1.25rem;
+    }
+    .tab {
+      padding: 10px 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
+      margin-bottom: -1px;
+      font-family: var(--font);
+      transition: color 0.15s;
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--text-primary); font-weight: 500; border-bottom-color: var(--text-primary); }
+    .tab-count {
+      display: inline-block;
+      background: var(--bg-secondary);
+      border-radius: 99px;
+      font-size: 11px;
+      padding: 1px 8px;
+      margin-left: 6px;
+      color: var(--text-secondary);
+    }
+    .tab.active .tab-count { background: var(--bg-primary); border: 0.5px solid var(--border-medium); }
+
+    .table-wrap {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--bg-secondary);
+      border-bottom: 0.5px solid var(--border-light);
+    }
+    td { padding: 13px 16px; border-bottom: 0.5px solid var(--border-light); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaf8; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+    .badge.pending  { background: #FAEEDA; color: #854F0B; }
+    .badge.approved { background: #EAF3DE; color: #3B6D11; }
+    .badge.rejected { background: #FCEBEB; color: #A32D2D; }
+    .type-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; background: var(--bg-secondary);
+      color: var(--text-secondary); border: 0.5px solid var(--border-light);
+    }
+
+    .user-cell { display: flex; flex-direction: column; gap: 2px; }
+
+    .amount { font-weight: 500; font-family: 'Courier New', monospace; font-size: 13px; }
+    .desc-cell {
+      max-width: 200px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+      color: var(--text-secondary);
+    }
+
+    .view-btn {
+      background: none;
+      border: 0.5px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 5px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-primary);
+      font-family: var(--font);
+      transition: background 0.1s;
+    }
+    .view-btn:hover { background: var(--bg-secondary); }
+
+    .empty { text-align: center; padding: 3rem; color: var(--text-secondary); font-size: 13px; }
+
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border-light);
+      width: 100%; max-width: 480px;
+      overflow: hidden;
+      animation: fadeUp 0.15s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 0.5px solid var(--border-light);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h2 { font-size: 15px; font-weight: 500; }
+    .close-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 18px; color: var(--text-secondary);
+      line-height: 1; padding: 2px 6px;
+      border-radius: var(--radius-md);
+      font-family: var(--font);
+    }
+    .close-btn:hover { background: var(--bg-secondary); }
+
+    .modal-body { padding: 20px; }
+    .detail-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 14px; font-size: 13px; }
+    .detail-label { width: 115px; flex-shrink: 0; color: var(--text-secondary); font-size: 12px; padding-top: 1px; }
+    .detail-val   { color: var(--text-primary); flex: 1; line-height: 1.5; }
+
+    .divider { border: none; border-top: 0.5px solid var(--border-light); margin: 16px 0; }
+    .section-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+    .audit-item {
+      font-size: 12px; color: var(--text-secondary);
+      padding: 10px 12px; background: var(--bg-secondary);
+      border-radius: var(--radius-md); line-height: 1.6;
+    }
+    .audit-item strong { color: var(--text-primary); font-weight: 500; }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      th, td { padding: 10px; }
+      table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="portal">
+  <div class="header">
+    <h1>Reimbursement requests</h1>
+    <p>SAU Finance — Admin portal</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">New requests</div>
+      <div class="stat-value new" id="cnt-new">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value pending" id="cnt-pending">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Rejected</div>
+      <div class="stat-value rejected" id="cnt-rejected">0</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('new')"      id="tab-new">     New      <span class="tab-count" id="tc-new">0</span></button>
+    <button class="tab"        onclick="switchTab('pending')"  id="tab-pending">  Pending  <span class="tab-count" id="tc-pending">0</span></button>
+    <button class="tab"        onclick="switchTab('rejected')" id="tab-rejected"> Rejected <span class="tab-count" id="tc-rejected">0</span></button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead id="t-head"></thead>
+      <tbody id="t-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+  const requests = [
+    { id:1, user:'Shreya Bansal', email:'shreya@sau.ac.in', dept:'Computer Science', type:'reimbursement', amount:1200, category:'Travel',      description:'Cab to IGI Airport for research conference',       status:'pending',  date:'2025-04-01' },
+    { id:2, user:'Shreya Bansal', email:'shreya@sau.ac.in', dept:'Computer Science', type:'reimbursement', amount:800,  category:'Hospitality', description:'Team dinner for Under25 Summit volunteers',        status:'approved', date:'2025-03-28' },
+    { id:3, user:'Shreya Bansal', email:'shreya@sau.ac.in', dept:'Computer Science', type:'advance',       amount:1500, category:'Travel',      description:'Train tickets for college fest outstation',        status:'pending',  date:'2025-04-02' },
+    { id:4, user:'Srija Das',     email:'srija@sau.ac.in',  dept:'Computer Science', type:'reimbursement', amount:500,  category:'Logistics',   description:'Printed banners for event',                        status:'rejected', date:'2025-03-25' },
+    { id:5, user:'Shreya Bansal', email:'shreya@sau.ac.in', dept:'Computer Science', type:'advance',       amount:2000, category:'Logistics',   description:'Advance for stationery and printing supplies',     status:'approved', date:'2025-03-20' },
+  ];
+
+  const auditLog = [
+    { requestId:2, actionBy:'Admin User', action:'approved', comment:'Valid expense, within policy limits.',                 date:'2025-03-29' },
+    { requestId:4, actionBy:'Admin User', action:'rejected', comment:'Receipt not attached. Please resubmit with bill.',     date:'2025-03-26' },
+    { requestId:5, actionBy:'Admin User', action:'approved', comment:'Advance approved. Submit actual bill after spending.', date:'2025-03-21' },
+  ];
+
+  const settlements = [
+    { requestId:5, settled:1800, returned:200 }
+  ];
+
+  let activeTab = 'new';
+
+  function fmt(n) { return '₹' + n.toLocaleString('en-IN'); }
+
+  function getNew()      { return requests.filter(r => r.status === 'pending' && !auditLog.find(a => a.requestId === r.id)); }
+  function getPending()  { return requests.filter(r => r.status === 'pending'); }
+  function getRejected() { return requests.filter(r => r.status === 'rejected'); }
+
+  function updateCounts() {
+    const c = { new: getNew().length, pending: getPending().length, rejected: getRejected().length };
+    Object.entries(c).forEach(([k,v]) => {
+      document.getElementById('cnt-' + k).textContent = v;
+      document.getElementById('tc-'  + k).textContent = v;
+    });
+  }
+
+  function userCell(r) {
+    return `<div class="user-cell">
+      <div style="font-size:13px">${r.user}</div>
+      <div style="font-size:11px;color:var(--text-secondary)">${r.email}</div>
+    </div>`;
+  }
+
+  function openModal(id) {
+    const r      = requests.find(x => x.id === id);
+    const log    = auditLog.find(a => a.requestId === id);
+    const settle = settlements.find(s => s.requestId === id);
+
+    const auditHtml = log
+      ? `<div class="audit-item"><strong>${log.actionBy}</strong> ${log.action} this request on ${log.date}
+           <span style="display:block;margin-top:4px">"${log.comment}"</span></div>`
+      : `<div style="font-size:12px;color:var(--text-secondary);padding:6px 0">No audit trail yet.</div>`;
+
+    const settleHtml = settle ? `
+      <hr class="divider">
+      <div class="section-label">Settlement</div>
+      <div class="detail-row"><span class="detail-label">Amount spent</span>    <span class="detail-val amount">${fmt(settle.settled)}</span></div>
+      <div class="detail-row"><span class="detail-label">Balance returned</span><span class="detail-val amount">${fmt(settle.returned)}</span></div>` : '';
+
+    document.getElementById('modal-root').innerHTML = `
+      <div class="overlay" id="overlay" onclick="closeOutside(event)">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Request #${r.id}</h2>
+            <button class="close-btn" onclick="closeModal()">&#x2715;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-row"><span class="detail-label">Requester</span>  <div>${userCell(r)}</div></div>
+            <div class="detail-row"><span class="detail-label">Department</span> <span class="detail-val">${r.dept}</span></div>
+            <div class="detail-row"><span class="detail-label">Type</span>       <span class="detail-val"><span class="type-badge">${r.type}</span></span></div>
+            <div class="detail-row"><span class="detail-label">Category</span>   <span class="detail-val">${r.category}</span></div>
+            <div class="detail-row"><span class="detail-label">Amount</span>     <span class="detail-val amount">${fmt(r.amount)}</span></div>
+            <div class="detail-row"><span class="detail-label">Status</span>     <span class="detail-val"><span class="badge ${r.status}">${r.status}</span></span></div>
+            <div class="detail-row"><span class="detail-label">Date</span>       <span class="detail-val" style="color:var(--text-secondary)">${r.date}</span></div>
+            <div class="detail-row"><span class="detail-label">Description</span><span class="detail-val">${r.description}</span></div>
+            ${settleHtml}
+            <hr class="divider">
+            <div class="section-label">Audit trail</div>
+            ${auditHtml}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function closeModal()    { document.getElementById('modal-root').innerHTML = ''; }
+  function closeOutside(e) { if (e.target.id === 'overlay') closeModal(); }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    render();
+  }
+
+  const COLS = `<tr>
+    <th style="width:195px">Requester</th>
+    <th style="width:110px">Type</th>
+    <th style="width:100px">Amount</th>
+    <th style="width:110px">Category</th>
+    <th>Description</th>
+    <th style="width:80px">Action</th>
+  </tr>`;
+
+  function rowHtml(r) {
+    return `<tr>
+      <td>${userCell(r)}</td>
+      <td><span class="type-badge">${r.type}</span></td>
+      <td><span class="amount">${fmt(r.amount)}</span></td>
+      <td style="color:var(--text-secondary)">${r.category}</td>
+      <td><div class="desc-cell" title="${r.description}">${r.description}</div></td>
+      <td><button class="view-btn" onclick="openModal(${r.id})">View</button></td>
+    </tr>`;
+  }
+
+  function render() {
+    updateCounts();
+    const map  = { new: getNew, pending: getPending, rejected: getRejected };
+    const rows = map[activeTab]();
+    document.getElementById('t-head').innerHTML = COLS;
+    document.getElementById('t-body').innerHTML = rows.length
+      ? rows.map(rowHtml).join('')
+      : `<tr><td colspan="6"><div class="empty">No ${activeTab} requests</div></td></tr>`;
+  }
+
+  render();
+
+</script>
+  
