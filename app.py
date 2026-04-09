@@ -413,7 +413,7 @@ def new_request():
         error          = error,
         success        = success,
         extracted_data = extracted_data,
-        filepath       = filepath or ''
+        filepath       = filepath or '',
         advance_tracker = advance_tracker 
     )
 
