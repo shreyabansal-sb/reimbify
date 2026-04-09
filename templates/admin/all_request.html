@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -262,7 +260,7 @@
                             <td style="color:var(--text-muted); font-size:12px">{{ r.created_at[:10] if r.created_at else '' }}</td>
                             <td>
                                 <a class="review-btn"
-                                   href="/admin/review?id={{ r.id }}&name={{ r.student_name | urlencode }}&type={{ r.type | urlencode }}&amount={{ r.amount }}&category={{ r.category | urlencode }}&desc={{ r.description | urlencode }}&status={{ r.status }}&proof={{ r.proof_url | default('') | urlencode }}">
+                                   href="review.html?id={{ r.id }}&name={{ r.student_name | urlencode }}&type={{ r.type | urlencode }}&amount={{ r.amount }}&category={{ r.category | urlencode }}&desc={{ r.description | urlencode }}&status={{ r.status }}&proof={{ r.proof_url | default('') | urlencode }}">
                                     Review
                                 </a>
                             </td>
