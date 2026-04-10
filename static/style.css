@@ -886,14 +886,40 @@ body.dashboard-layout.no-sidebar .sidebar {
     height: 350px;
     border: 1px solid var(--border-dim);
     box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
 }
 
 .chart-container h3 {
     margin-top: 0;
+    margin-bottom: 12px;
     color: var(--text-dim);
     font-size: 0.8rem;
     letter-spacing: 2px;
-    margin-bottom: 15px;
+    line-height: 1;
+    height: 20px;
+}
+
+/* Bar chart — explicit px height so Chart.js can measure it at init */
+.chart-container > canvas {
+    display: block;
+    width: 100% !important;
+    height: calc(350px - 50px - 20px - 12px) !important;
+}
+
+/* Donut — wrapper must have explicit px height for Chart.js */
+.pie-wrapper {
+    position: relative;
+    width: 100%;
+    height: calc(350px - 50px - 20px - 12px);
+}
+
+.pie-wrapper > canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 
