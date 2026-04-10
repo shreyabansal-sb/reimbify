@@ -131,83 +131,100 @@
     </div>
 
     <script>
-    fetch('/api/analytics')
-    .then(res => res.json())
-    .then(data => {
-        const analytics = data.analytics;
+    let barChart, donutChart;
 
-        const labels = analytics.by_category.map(c => c.category);
-        const total  = analytics.by_category.map(c => c.total_amount);
-        const approved = analytics.by_category.map(c => c.approved_amount);
+    function loadCharts() {
+        fetch('/api/analytics')
+        .then(res => res.json())
+        .then(data => {
+            const analytics = data.analytics;
+            const labels   = analytics.by_category.map(c => c.category);
+            const total    = analytics.by_category.map(c => c.total_amount);
+            const approved = analytics.by_category.map(c => c.approved_amount);
 
-        const chartDefaults = {
-            color: '#cdd5cd',
-            borderColor: '#1f261c',
-        };
-
-        new Chart(document.getElementById('barChart'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Budget',
-                        data: total,
-                        backgroundColor: 'rgba(167,246,119,0.25)',
-                        borderColor: '#a7f677',
-                        borderWidth: 1
+            if (barChart) {
+                barChart.data.labels = labels;
+                barChart.data.datasets[0].data = total;
+                barChart.data.datasets[1].data = approved;
+                barChart.update();
+            } else {
+                barChart = new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: 'Budget',
+                                data: total,
+                                backgroundColor: 'rgba(167,246,119,0.25)',
+                                borderColor: '#a7f677',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Spent',
+                                data: approved,
+                                backgroundColor: 'rgba(37,150,190,0.35)',
+                                borderColor: '#2596be',
+                                borderWidth: 1
+                            }
+                        ]
                     },
-                    {
-                        label: 'Spent',
-                        data: approved,
-                        backgroundColor: 'rgba(37,150,190,0.35)',
-                        borderColor: '#2596be',
-                        borderWidth: 1
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#cdd5cd', font: { size: 11 } } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#607060' }, grid: { color: 'rgba(167,246,119,0.05)' } },
+                            y: { ticks: { color: '#607060' }, grid: { color: 'rgba(167,246,119,0.05)' } }
+                        }
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: '#cdd5cd', font: { size: 11 } } }
-                },
-                scales: {
-                    x: { ticks: { color: '#607060' }, grid: { color: 'rgba(167,246,119,0.05)' } },
-                    y: { ticks: { color: '#607060' }, grid: { color: 'rgba(167,246,119,0.05)' } }
-                }
+                });
             }
-        });
 
-        new Chart(document.getElementById('donutChart'), {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: approved,
-                    backgroundColor: [
-                        'rgba(167,246,119,0.7)',
-                        'rgba(37,150,190,0.7)',
-                        'rgba(250,204,21,0.7)',
-                        'rgba(255,77,77,0.7)',
-                        'rgba(139,171,141,0.7)'
-                    ],
-                    borderColor: '#0a0b0a',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#cdd5cd', font: { size: 11 }, padding: 12 }
+            if (donutChart) {
+                donutChart.data.labels = labels;
+                donutChart.data.datasets[0].data = approved;
+                donutChart.update();
+            } else {
+                donutChart = new Chart(document.getElementById('donutChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: approved,
+                            backgroundColor: [
+                                'rgba(167,246,119,0.7)',
+                                'rgba(37,150,190,0.7)',
+                                'rgba(250,204,21,0.7)',
+                                'rgba(255,77,77,0.7)',
+                                'rgba(139,171,141,0.7)'
+                            ],
+                            borderColor: '#0a0b0a',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#cdd5cd', font: { size: 11 }, padding: 12 }
+                            }
+                        }
                     }
-                }
+                });
             }
         });
-    });
+    }
+
+    // Initial load
+    loadCharts();
+
+    // Refresh charts every 10 seconds
+    setInterval(loadCharts, 10000);
     </script>
 
 </body>
