@@ -1,4 +1,12 @@
+"""
+database.py — Reimbify
+SQLite version — zero installation needed, just works.
+PRODUCTION NOTE: swap sqlite3 for mysql-connector-python, 
+change get_db() to MySQL connection — everything else stays identical.
+"""
 
+import sqlite3
+import os
 """
 database.py — Reimbify
 SQLite version — zero installation needed, just works.
@@ -140,6 +148,23 @@ def get_request_by_id(request_id, user_id):
     ).fetchone()
     conn.close()
     return dict(request) if request else None
+
+
+def get_admin_request_by_id(request_id):
+    """Single request for admin review, with student details."""
+    conn = get_db()
+    req = conn.execute(
+        """
+        SELECT r.*, u.name AS student_name, u.department
+        FROM requests r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.id = ?
+        """,
+        (request_id,)
+    ).fetchone()
+    conn.close()
+    return dict(req) if req else None
+
 
 
 def create_request(user_id, req_type, amount, category, description, event='N/A'):
