@@ -1,12 +1,4 @@
-"""
-database.py — Reimbify
-SQLite version — zero installation needed, just works.
-PRODUCTION NOTE: swap sqlite3 for mysql-connector-python, 
-change get_db() to MySQL connection — everything else stays identical.
-"""
 
-import sqlite3
-import os
 """
 database.py — Reimbify
 SQLite version — zero installation needed, just works.
