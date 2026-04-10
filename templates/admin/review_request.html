@@ -8,6 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
+<script>
+function showPanel(panel) {
+    document.getElementById('changesBox').style.display = 'none';
+    document.getElementById('rejectBox').style.display = 'none';
+
+    if (panel === 'changes') {
+        document.getElementById('changesBox').style.display = 'block';
+    } else if (panel === 'reject') {
+        document.getElementById('rejectBox').style.display = 'block';
+    } else if (panel === 'none') {
+        document.getElementById('form-approve').submit();
+    }
+}
+</script>
+
 <body class="dashboard-layout no-sidebar">
 
     
