@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settle Advance — Reimbify</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+ 
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            font-family: sans-serif;
+        }
+ 
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+ 
+        .sidebar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: white;
+        }
+ 
+        .nav-link {
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+ 
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+        }
+ 
+        .logout-btn {
+            margin-top: auto;
+            color: #fca5a5;
+            text-decoration: none;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+ 
+        .main-wrapper {
+            margin-left: 260px;
+            flex: 1;
+            width: calc(100% - 260px);
+        }
+ 
+        .container {
+            padding: 40px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+ 
+        .alert {
+            color: red;
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+        }
+ 
+        .success-box {
+            background: #f0fff4;
+            border: 1px solid #c6f6d5;
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+ 
+        .success-box h2 { color: #276749; margin-top: 0; }
+        .success-box p  { color: #444; font-size: 1rem; }
+ 
+        .success-box .amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #276749;
+        }
+ 
+        .advance-info {
+            background: #fffbeb;
+            border: 1px solid #fbd38d;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+ 
+        .advance-info h3 { margin-top: 0; color: #b7791f; }
+ 
+        .advance-info table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+ 
+        .advance-info td {
+            padding: 6px 0;
+            color: #444;
+        }
+ 
+        .advance-info td:first-child {
+            font-weight: bold;
+            width: 40%;
+            color: #666;
+        }
+ 
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+ 
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+ 
+        .btn {
+            background-color: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            text-decoration: none;
+            display: inline-block;
+        }
+ 
+        .btn-back {
+            background: none;
+            color: #888;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+ 
+    <div class="sidebar">
+        <div class="logo">REIMBIFY</div>
+        
+        <a href="/student/dashboard" class="nav-link">
+            <i class="fas fa-home"></i> Overview
+        </a>
+        <a href="/student/my-requests" class="nav-link">
+            <i class="fas fa-tasks"></i> My Requests
+        </a>
+
+        <a href="/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+ 
+    <div class="main-wrapper">
+        <div class="container">
+ 
+            <h2>Settle Advance</h2>
+            <p style="color:#888; margin-top:0;">
+                You received this advance. Now submit your actual bill
+                and tell us how much you spent.
+            </p>
+ 
+            {% if error %}
+                <div class="alert">{{ error }}</div>
+            {% endif %}
+ 
+            <!-- ── ADVANCE DETAILS ── -->
+            <!--
+                Flask passes the advance request row as 'advance'.
+                We show the student what they originally requested
+                so they remember the context.
+            -->
+            <div class="advance-info">
+                <h3>⚡ Advance #{{ advance.id }}</h3>
+                <table>
+                    <tr>
+                        <td>Amount Approved</td>
+                        <td>₹{{ advance.amount }}</td>
+                    </tr>
+                    <tr>
+                        <td>Category</td>
+                        <td>{{ advance.category }}</td>
+                    </tr>
+                    {% if advance.event and advance.event != 'N/A' %}
+                    <tr>
+                        <td>Event</td>
+                        <td>{{ advance.event }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>Description</td>
+                        <td>{{ advance.description }}</td>
+                    </tr>
+                </table>
+            </div>
+ 
+            <!-- ── SETTLEMENT RESULT ── -->
+            <!--
+                balance_returned is set by Flask after form submission.
+                It's None before submission so this block is hidden.
+                After settle_advance() runs, Flask returns how much
+                the student needs to give back to the university.
+            -->
+            {% if balance_returned is not none %}
+            <div class="success-box">
+                <h2>✓ Advance Settled!</h2>
+ 
+                {% if balance_returned > 0 %}
+                    <p>You spent less than your advance. Please return:</p>
+                    <div class="amount">₹{{ balance_returned }}</div>
+                    <p style="color:#888; font-size:0.9rem;">
+                        Return this amount to the finance department.
+                    </p>
+                {% else %}
+                    <p>You spent the full advance amount. No balance to return.</p>
+                    <div class="amount" style="color:#276749;">₹0 to return</div>
+                {% endif %}
+ 
+                <br>
+                <a href="/club/my-requests" class="btn">View My Requests →</a>
+            </div>
+ 
+            {% else %}
+ 
+            <!-- ── SETTLEMENT FORM ── -->
+            <!--
+                Student enters how much they actually spent
+                and uploads the real bill as proof.
+                Flask calculates balance_returned = advance - settled_amount.
+            -->
+            <form action="/club/settle-advance/{{ advance.id }}"
+                  method="POST"
+                  enctype="multipart/form-data">
+ 
+                <label>
+                    How much did you actually spend? (₹)
+                    <span style="color:red">*</span>
+                </label>
+                <input type="number"
+                       name="settled_amount"
+                       step="0.01"
+                       min="0"
+                       max="{{ advance.amount }}"
+                       required
+                       placeholder="Enter actual amount spent">
+                <small style="color:#888; display:block; margin-top:4px;">
+                    Must be ≤ ₹{{ advance.amount }} (your approved advance).
+                    If you spent more, submit a separate reimbursement for the difference.
+                </small>
+ 
+                <label>Upload Bill / Receipt <span style="color:red">*</span></label>
+                <input type="file"
+                       name="bill"
+                       accept=".jpg,.jpeg,.png,.pdf"
+                       required>
+                <small style="color:#888; display:block; margin-top:4px;">
+                    This is mandatory. Admin needs proof of what was spent.
+                    JPG, PNG or PDF.
+                </small>
+ 
+                <button type="submit" class="btn">Submit Settlement →</button>
+                <a href="/club/my-requests" class="btn btn-back">← Back to My Requests</a>
+            </form>
+ 
+            {% endif %}
+ 
+        </div>
+    </div>
+ 
+</body>
+</html>

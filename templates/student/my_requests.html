@@ -182,6 +182,73 @@
                 <a href="{{ url_for('student_my_requests', status='rejected') }}"><button type="button" class="filter-btn">Rejected</button></a>
             </div>
 
+            <!-- ── ADVANCE TRACKER ── -->
+            <!-- Shows approved advances that still need a bill uploaded.
+              get_pending_advances() does a LEFT JOIN with advance_settlements.
+              is_settled=0 means no settlement row exists yet — bill still needed.
+              is_settled=1 means settled — shown in green for reference.-->
+            {% if advance_tracker %}
+            <div style="margin-bottom: 30px;">
+
+                <h3 style="margin-bottom: 10px;">⚡ Advance Bill Tracker</h3>
+                <p style="color:#888; font-size:0.9rem; margin-top:0; margin-bottom:15px;">
+                    Approved advances that need a bill uploaded after spending.
+                </p>
+                
+                {% for adv in advance_tracker %}
+                <div style="
+                background: {% if adv.is_settled %}#f0fff4{% else %}#fffbeb{% endif %};
+                border: 1px solid {% if adv.is_settled %}#c6f6d5{% else %}#fbd38d{% endif %};
+                border-radius: 10px;
+                padding: 15px 20px;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;">
+                
+                <div>
+                    
+                    <strong>
+                        ₹{{ "{:,.2f}".format(adv.amount) }} — {{ adv.category }}
+                        {% if adv.event and adv.event != 'N/A' %}
+                        · {{ adv.event }}
+                        {% endif %}
+                    </strong>
+                    <br>
+                    <small style="color:#666;">{{ adv.description }}</small>
+                    <br>
+                    
+                    {% if adv.is_settled %}
+                    
+                    <small style="color:green;">
+                        ✓ Settled — spent ₹{{ adv.settled_amount }},
+                        returned ₹{{ adv.balance_returned }}
+                    </small>
+                    
+                    {% else %}
+                    <small style="color:#d97706;">
+                        ⚠ Bill not submitted yet — admin can see this is open
+                    </small>
+                    
+                    {% endif %}
+                </div>
+                
+                <div>
+                    {% if not adv.is_settled %}
+                    <a href="/student/settle-advance/{{ adv.id }}"
+                    style="background:#d97706; color:white; padding:8px 16px;
+                    border-radius:5px; text-decoration:none; white-space:nowrap;">
+                    Upload Bill →
+                </a>
+                {% else %}
+                <span style="color:green; font-weight:bold;">✓ Done</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
             <!-- requests: filtered list from get_student_requests(user_id)
                  each row has: id, type, amount, category, event, description,
                  status, admin_comment, created_at, bill_path -->
@@ -256,18 +323,18 @@
                     </tr>
                 </table>
                 {% endfor %}
-            {% else %}
+                {% else %}
                 <div style="background: white; padding: 40px; border-radius: 12px; text-align: center; border: 1px dashed #cbd5e1;">
                     <i class="fas fa-folder-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
                     <p style="color: #64748b;">No requests found in this category.</p>
                 </div>
-            {% endif %}
-
-            <footer style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <p style="font-size: 0.85rem; color: #94a3b8;">
-                    REIMBIFY &bull; Team Technica &copy; 2026 &bull; Smart Campus Hackathon
-                </p>
-            </footer>
+                {% endif %}
+                
+                <footer style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                    <p style="font-size: 0.85rem; color: #94a3b8;">
+                        REIMBIFY &bull; Team Technica &copy; 2026 &bull; Smart Campus Hackathon
+                    </p>
+                </footer>
 
         </div>
     </div>

@@ -121,113 +121,239 @@
                 <div class="success">{{ success }}</div>
             {% endif %}
 
+            <!-- ============================================== -->
+            <!-- STEP 1 — Initial form                         -->
+            <!-- Flask passes extracted_data=None here         -->
+            <!-- ============================================== -->
             {% if not extracted_data %}
-
+ 
             <form action="/student/new-request" method="POST" enctype="multipart/form-data">
-
                 <input type="hidden" name="step" value="upload">
-
-                <label>Request Type</label>
+ 
+                <label>Request Type <span style="color:red">*</span></label>
                 <select name="type" id="type" required onchange="toggleBill()">
                     <option value="">Select</option>
-                    <option value="reimbursement">Reimbursement</option>
-                    <option value="advance">Advance</option>
+                    <option value="reimbursement">Reimbursement — I already spent, want money back</option>
+                    <option value="advance">Advance — I need money before spending</option>
                 </select>
-
-                <label>Amount</label>
-                <input type="number" name="amount" required>
-
-                <!-- Event field: optional for students, leave blank for N/A -->
-                <div class="form-group">
-                    <label for="event">Event Name <span style="font-weight:normal; color:#888;">(optional)</span></label>
-                    <input type="text" id="event" name="event"
-                        placeholder="e.g. Tech Fest 2026 — leave blank if not event-related" maxlength="100">
-                </div>
-
-                <label>Category</label>
+ 
+                <label>Amount (₹) <span style="color:red">*</span></label>
+                <input type="number" name="amount" step="0.01" min="1"
+                       required placeholder="Enter amount in rupees">
+ 
+                <label>
+                    Event Name
+                    <span style="font-weight:normal; color:#888;">
+                        (optional — leave blank if not event-related)
+                    </span>
+                </label>
+                <input type="text" name="event"
+                       placeholder="e.g. Tech Fest 2026" maxlength="100">
+ 
+                <label>Category <span style="color:red">*</span></label>
                 <select name="category" required>
+                    <option value="" disabled selected>Select category</option>
                     {% for b in budgets %}
-                        <option value="{{ b.category }}">{{ b.category }}</option>
+                        <option value="{{ b.category }}">
+                            {{ b.category }} — ₹{{ b.remaining }} remaining
+                        </option>
                     {% endfor %}
                 </select>
-
+ 
                 <label>Description</label>
-                <textarea name="description" rows="3"></textarea>
-
+                <textarea name="description" rows="3"
+                    placeholder="What was this expense for? Be specific — admin will review this."></textarea>
+ 
+                <!--
+                    Bill upload — only for reimbursements.
+                    JS hides this when Advance is selected.
+                    DEMO TIP: name your test file 'test_receipt.jpg'
+                    to trigger the Vision API mock extraction.
+                    Any other filename falls back to manual entry.
+                -->
                 <div id="billSection">
-                    <label>Upload Bill</label>
-                    <input type="file" name="bill">
+                    <label>Upload Bill / Receipt</label>
+                    <input type="file" name="bill" accept=".jpg,.jpeg,.png,.pdf">
+                    <small style="color:#888; display:block; margin-top:4px;">
+                        JPG, PNG or PDF. Vision API will auto-extract details.
+                    </small>
                 </div>
-
-                <button type="submit" class="btn">Submit</button>
+ 
+                <button type="submit" class="btn">Submit →</button>
             </form>
-
+ 
             {% endif %}
-
+            <!-- end step 1 -->
+ 
+ 
+            <!-- ============================================== -->
+            <!-- STEP 2 — Confirm extracted or manual details  -->
+            <!-- Flask sets extracted_data after bill upload   -->
+            <!-- extracted_data = dict  → Vision succeeded     -->
+            <!-- extracted_data = "manual" → Vision failed     -->
+            <!-- ============================================== -->
             {% if extracted_data %}
-
+ 
             <form action="/student/new-request" method="POST">
-
                 <input type="hidden" name="step" value="confirm">
-                <input type="hidden" name="filepath" value="{{ filepath }}">
-
-                <input type="hidden" name="type" value="{{ request.form.type }}">
-                <input type="hidden" name="event" value="{{ request.form.event }}">
-                <input type="hidden" name="category" value="{{ request.form.category }}">
-                <input type="hidden" name="description" value="{{ request.form.description }}">
-
+ 
+                <!--
+                    Flask stores form values in session['pending_request']
+                    during step 1 and passes them back as pending_data.
+                    We embed them here as hidden fields so step 2 POST
+                    has everything it needs to create the request.
+                -->
+                <input type="hidden" name="type"
+                       value="{{ pending_data.get('type', '') }}">
+                <input type="hidden" name="event"
+                       value="{{ pending_data.get('event', 'N/A') }}">
+                <input type="hidden" name="category"
+                       value="{{ pending_data.get('category', '') }}">
+                <input type="hidden" name="description"
+                       value="{{ pending_data.get('description', '') }}">
+ 
                 {% if extracted_data != "manual" %}
-
-                    <h3>Detected Details</h3>
-
-                    <label>Amount</label>
-                    <input type="number" name="amount" value="{{ extracted_data.amount }}">
-
-                    <label>Vendor</label>
-                    <input type="text" name="vendor" value="{{ extracted_data.vendor }}">
-
-                    <label>Date</label>
-                    <input type="date" name="date" value="{{ extracted_data.date }}">
-
-                    <input type="hidden" name="is_manual" value="false">
-
+ 
+                    <!-- Vision API succeeded — editable extracted details -->
+                    <div class="extracted-box">
+                        <h3>✓ Details Auto-Extracted by Google Vision API</h3>
+                        <p style="color:#276749; font-size:0.9rem; margin-top:0;">
+                            We read these from your uploaded bill.
+                            Check and edit if anything looks wrong, then confirm.
+                        </p>
+ 
+                        <label>Amount (₹)</label>
+                        <input type="number" name="amount" step="0.01"
+                               value="{{ extracted_data.amount }}">
+ 
+                        <label>Vendor / Shop Name</label>
+                        <input type="text" name="vendor"
+                               value="{{ extracted_data.vendor }}">
+ 
+                        <label>Date on Bill</label>
+                        <input type="date" name="date"
+                               value="{{ extracted_data.date }}">
+ 
+                        <input type="hidden" name="is_manual" value="false">
+                    </div>
+ 
                 {% else %}
-
-                    <h3>Enter Bill Details Manually</h3>
-
-                    <label>Amount</label>
-                    <input type="number" name="amount" required>
-
-                    <label>Vendor</label>
-                    <input type="text" name="vendor" required>
-
-                    <label>Date</label>
-                    <input type="date" name="date" required>
-
-                    <input type="hidden" name="is_manual" value="true">
-
+ 
+                    <!-- Vision API failed — manual entry fallback -->
+                    <div class="manual-box">
+                        <h3>⚠ Couldn't Read Bill Automatically</h3>
+                        <p style="color:#b7791f; font-size:0.9rem; margin-top:0;">
+                            This happens with handwritten bills or unclear images.
+                            Please enter the details from your bill manually.
+                        </p>
+ 
+                        <label>Amount (₹) <span style="color:red">*</span></label>
+                        <input type="number" name="amount" step="0.01"
+                               required placeholder="Enter amount from your bill">
+ 
+                        <label>Vendor / Shop Name <span style="color:red">*</span></label>
+                        <input type="text" name="vendor"
+                               required placeholder="e.g. Ola Cabs, Amazon">
+ 
+                        <label>Date on Bill <span style="color:red">*</span></label>
+                        <input type="date" name="date" required>
+ 
+                        <input type="hidden" name="is_manual" value="true">
+                    </div>
+ 
                 {% endif %}
-
-                <button type="submit" class="btn">Confirm & Submit</button>
-
+ 
+                <button type="submit" class="btn">Confirm & Submit →</button>
+                <a href="/student/new-request"
+                   style="margin-left:10px; color:#888; font-size:0.9rem;">
+                    ← Start over
+                </a>
             </form>
-
+ 
             {% endif %}
-
+            <!-- end step 2 -->
+ 
+ 
+            <!-- ============================================== -->
+            <!-- ADVANCE TRACKER                               -->
+            <!-- Hidden by default, shown when Advance is      -->
+            <!-- selected via toggleBill() JS below.           -->
+            <!-- Lists all approved advances + settlement status-->
+            <!-- ============================================== -->
+            <div id="advanceTracker" style="display:none; margin-top:30px;">
+                <h3>Your Approved Advances</h3>
+                <p style="color:#888; font-size:0.9rem; margin-top:0;">
+                    These advances were approved. You must upload a bill after
+                    spending to close each one. Unsettled advances are visible to admin.
+                </p>
+ 
+                {% if advance_tracker %}
+                    {% for adv in advance_tracker %}
+                    <div class="tracker-card
+                        {% if adv.is_settled %}settled{% else %}unsettled{% endif %}">
+ 
+                        <div class="tracker-info">
+                            <strong>
+                                ₹{{ adv.amount }} — {{ adv.category }}
+                                {% if adv.event and adv.event != 'N/A' %}
+                                    · {{ adv.event }}
+                                {% endif %}
+                            </strong>
+                            <small>{{ adv.description }}</small>
+                            <small>Request #{{ adv.id }}</small>
+ 
+                            {% if adv.is_settled %}
+                                <span class="status-settled">
+                                    ✓ Settled — spent ₹{{ adv.settled_amount }},
+                                    returned ₹{{ adv.balance_returned }}
+                                </span>
+                            {% else %}
+                                <span class="status-pending">
+                                    ⚠ Bill not submitted yet
+                                </span>
+                            {% endif %}
+                        </div>
+ 
+                        <div>
+                            {% if not adv.is_settled %}
+                                <a href="/student/settle-advance/{{ adv.id }}"
+                                   class="settle-btn">
+                                    Upload Bill →
+                                </a>
+                            {% else %}
+                                <span class="done-label">✓ Done</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+ 
+                {% else %}
+                    <p style="color:#888;">
+                        No approved advances yet. Submit one above and it'll
+                        appear here once admin approves it.
+                    </p>
+                {% endif %}
+            </div>
+            <!-- end advance tracker -->
+ 
         </div>
+        <!-- end container -->
     </div>
-
+    <!-- end main-wrapper -->
     <script>
     function toggleBill() {
-        const type = document.getElementById("type").value;
-        const billSection = document.getElementById("billSection");
+    const type = document.getElementById("type").value;
+    const billSection = document.getElementById("billSection");
+    const tracker = document.getElementById("advanceTracker");
 
-        if (type === "advance") {
-            billSection.style.display = "none";
-        } else {
-            billSection.style.display = "block";
-        }
+    if (type === "advance") {
+        billSection.style.display = "none";
+        tracker.style.display = "block";
+    } else {
+        billSection.style.display = "block";
+        tracker.style.display = "none";
     }
+}
     </script>
 
 </body>

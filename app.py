@@ -405,16 +405,20 @@ def new_request():
 
                 success = f"Request #{request_id} submitted! Status: Pending review."
 
+    pending_data = session.get('pending_request', {})
+
     return render_template(
         'student/new_request.html',
         user_name      = session['user_name'],
         budgets        = budgets,
         pending_count  = pending_count,
+        extracted_data = extracted_data,
+        pending_data    = pending_data,
+        filepath       = filepath or '',
+        advance_tracker = advance_tracker, 
         error          = error,
         success        = success,
-        extracted_data = extracted_data,
-        filepath       = filepath or '',
-        advance_tracker = advance_tracker 
+        
     )
 
 
@@ -540,69 +544,135 @@ def club_new_request():
     if not login_required('club'):
         return redirect(url_for('login'))
 
-    user_id       = session['user_id']
-    pending_count = get_pending_requests_count(user_id)
-    budgets       = get_student_budgets(user_id)
-    error         = None
-    success       = None
+    user_id        = session['user_id']
+    pending_count  = get_pending_requests_count(user_id)
+    budgets        = get_student_budgets(user_id)
+    advance_tracker = get_pending_advances(user_id)
+    error          = None
+    success        = None
+    extracted_data = None
+    filepath       = None
 
     if request.method == 'POST':
-        req_type    = request.form.get('type', '').strip()
-        amount_str  = request.form.get('amount', '').strip()
-        category    = request.form.get('category', '').strip().title()
-        description = request.form.get('description', '').strip()
-        event       = request.form.get('event', '').strip() or 'N/A'
+        step = request.form.get('step')
 
-        if not req_type or not amount_str or not category:
-            error = "Please fill in all required fields."
-        else:
-            try:
-                amount = float(amount_str)
-            except ValueError:
-                error = "Amount must be a valid number."
-                return render_template('club/new_request.html',
-                                       user_name=session['user_name'],
-                                       budgets=budgets,
-                                       pending_count=pending_count,
-                                       error=error)
+        if step == 'upload':
+            req_type    = request.form.get('type', '').strip()
+            amount_str  = request.form.get('amount', '').strip()
+            category    = request.form.get('category', '').strip().title()
+            description = request.form.get('description', '').strip()
+            event       = request.form.get('event', '').strip() or 'N/A'
 
-            # Clubs get higher limits — separate policy function
-            passed, reason = club_policy_check(amount, category)
-
-            if not passed:
-                error = f"Policy check failed: {reason}"
+            if not req_type or not amount_str or not category:
+                error = "Please fill in all required fields."
             else:
-                request_id = create_request(
-                    user_id, req_type, amount, category, description, event
-                )
+                try:
+                    amount = float(amount_str)
+                except ValueError:
+                    error = "Amount must be a valid number."
+                    return render_template('club/new_request.html',
+                                           user_name=session['user_name'],
+                                           budgets=budgets,
+                                           pending_count=pending_count,
+                                           advance_tracker=advance_tracker,
+                                           extracted_data=None,
+                                           pending_data={},
+                                           error=error)
 
-                if req_type == 'reimbursement' and 'bill' in request.files:
-                    file = request.files['bill']
+                # Clubs use higher limits
+                passed, reason = club_policy_check(amount, category)
+
+                if not passed:
+                    error = f"Policy check failed: {reason}"
+
+                elif req_type == 'advance':
+                    # Advances save immediately — no bill needed now
+                    request_id = create_request(
+                        user_id, req_type, amount, category, description, event
+                    )
+                    success = f"Advance request #{request_id} submitted! Pending admin review."
+
+                else:
+                    # Reimbursement — handle bill upload + Vision mock
+                    file = request.files.get('bill')
                     if file and file.filename != '' and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
-                        filename = f"req_{request_id}_{filename}"
+                        filename = f"temp_{session['user_id']}_{filename}"
                         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                         file.save(filepath)
-                        save_bill(request_id=request_id,
-                                  file_path=filepath, is_manual=True)
-                elif req_type == 'advance' and 'bill' in request.files \
-                        and request.files['bill'].filename != '':
-                    success = (f"Request #{request_id} submitted! Status: Pending review. "
-                               f"(Bill not saved — for advances, submit bill after "
-                               f"spending via 'Settle Advance'.)")
 
-                if not success:
-                    success = f"Request #{request_id} submitted! Status: Pending review."
+                        # Mock Vision API — same as student route
+                        if 'test_receipt' in filename.lower():
+                            extracted_data = {
+                                'amount': 4500.00,
+                                'vendor': 'Event Catering Co.',
+                                'date':   '2026-04-10'
+                            }
+                        else:
+                            extracted_data = "manual"
+                    else:
+                        extracted_data = "manual"
+
+                    session['pending_request'] = {
+                        'type':        req_type,
+                        'amount':      amount,
+                        'category':    category,
+                        'description': description,
+                        'event':       event,
+                        'filepath':    filepath
+                    }
+
+        elif step == 'confirm':
+            pending = session.pop('pending_request', None)
+            if not pending:
+                error = "Session expired. Please start again."
+            else:
+                amount    = float(request.form.get('amount', pending['amount']))
+                vendor    = request.form.get('vendor', '')
+                date      = request.form.get('date', '')
+                is_manual = request.form.get('is_manual', 'true') == 'true'
+                filepath  = pending.get('filepath')
+
+                request_id = create_request(
+                    user_id,
+                    pending['type'],
+                    amount,
+                    pending['category'],
+                    pending['description'],
+                    pending['event']
+                )
+
+                if filepath and os.path.exists(filepath):
+                    final_path = os.path.join(
+                        app.config['UPLOAD_FOLDER'],
+                        f"req_{request_id}_{os.path.basename(filepath)}"
+                    )
+                    os.rename(filepath, final_path)
+                    save_bill(
+                        request_id       = request_id,
+                        file_path        = final_path,
+                        extracted_amount = amount if not is_manual else None,
+                        extracted_vendor = vendor if not is_manual else None,
+                        extracted_date   = date   if not is_manual else None,
+                        is_manual        = is_manual
+                    )
+
+                success = f"Request #{request_id} submitted! Status: Pending review."
+
+    pending_data = session.get('pending_request', {})
 
     return render_template(
         'club/new_request.html',
-        user_name     = session['user_name'],
-        budgets       = budgets,
-        pending_count = pending_count,
-        error         = error,
-        success       = success
+        user_name       = session['user_name'],
+        budgets         = budgets,
+        pending_count   = pending_count,
+        advance_tracker = advance_tracker,
+        extracted_data  = extracted_data,
+        pending_data    = pending_data,
+        filepath        = filepath or '',
+        error           = error,
+        success         = success
     )
-
 
 # ============================================================
 #  ADMIN ROUTES
