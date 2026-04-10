@@ -6,91 +6,52 @@
     <title>Audit History | Reimbify</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --sidebar-bg: #1e293b;
-            --card-bg: #ffffff;
-            --primary: #3b82f6;
-            --danger: #ef4444;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
-
-        /* --- SIDEBAR (matches dashboard exactly) --- */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; position: fixed; height: 100vh; }
-        .sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { text-decoration: none; color: #cbd5e1; padding: 12px 15px; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
-        .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
-        .nav-link.active { background: rgba(255,255,255,0.13); color: white; }
-        .nav-link .nav-left { display: flex; align-items: center; gap: 10px; }
-        .badge { background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; }
-
-        /* --- MAIN --- */
-        .main-content { margin-left: 260px; flex: 1; padding: 40px; }
-
-        .table-container { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid #edf2f7; font-weight: 600; font-size: 0.85rem; }
-        td { padding: 15px; border-bottom: 1px solid #f7fafc; font-size: 0.95rem; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafaf8; }
-
-        .status-pill { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; }
-        .approved { background: #dcfce7; color: #15803d; }
-        .rejected { background: #fee2e2; color: #b91c1c; }
-        .modification_requested { background: #fef3c7; color: #92400e; }
-
-        .search-bar { display: flex; gap: 12px; margin-top: 20px; margin-bottom: 4px; }
-        .search-bar input {
-            flex: 1; height: 38px; padding: 0 14px; font-size: 14px;
-            border: 1px solid #e2e8f0; border-radius: 8px; outline: none; font-family: inherit;
-        }
-        .search-bar input:focus { border-color: #94a3b8; }
-        .search-bar select {
-            height: 38px; padding: 0 12px; font-size: 13px;
-            border: 1px solid #e2e8f0; border-radius: 8px;
-            color: #555; cursor: pointer; outline: none; font-family: inherit;
-        }
-
-        .empty { text-align: center; padding: 3rem; color: var(--text-muted); }
-    </style>
 </head>
-<body>
+
+<body class="dashboard-layout">
 
     <div class="sidebar">
-        <h2><i class="fas fa-university"></i> Reimbify</h2>
+        <div class="logo">Reimbify</div>
+        <div class="role-label">Admin</div>
 
-        <a href="/admin/dashboard" class="nav-link">
-            <span class="nav-left"><i class="fas fa-chart-line"></i> Dashboard</span>
-        </a>
-        <a href="{{ url_for('all_requests') }}" class="nav-link">
-            <span class="nav-left"><i class="fas fa-clock"></i> All Requests</span>
-            <span class="badge" id="pending-badge"></span>
-        </a>
-        <a href="/admin/audit" class="nav-link active">
-            <span class="nav-left"><i class="fas fa-history"></i> Audit History</span>
-        </a>
-        
+        <nav>
+            <a href="/admin/dashboard" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                Dashboard
+            </a>
+            <a href="{{ url_for('all_requests') }}" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-clock"></i></span>
+                All Requests
+                <span class="badge" id="pending-badge"></span>
+            </a>
+            <a href="/admin/audit" class="nav-link active">
+                <span class="nav-icon"><i class="fas fa-history"></i></span>
+                Audit History
+            </a>
+        </nav>
 
-        <div style="margin-top: auto;">
-            <a href="/logout" class="nav-link" style="color: #fca5a5;">
-                <span class="nav-left"><i class="fas fa-sign-out-alt"></i> Logout</span>
+        <div class="sidebar-footer">
+            <a href="/logout" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
     </div>
 
     <div class="main-content">
-        <div class="table-container">
-            <h1 style="margin: 0; font-size: 1.8rem;">Audit History Logs</h1>
-            <p style="color: var(--text-muted); margin-top: 6px;">A complete record of all processed reimbursement actions.</p>
+
+        <div class="page-header">
+            <div>
+                <h1>Audit History</h1>
+                <p>Complete record of all processed reimbursement actions.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-scroll-container">
 
             <div class="search-bar">
-                <input type="text" id="audit-search" placeholder="Search by student or category..." oninput="filterAudit()">
+                <input type="text" id="audit-search"
+                       placeholder="Search by student or category..."
+                       oninput="filterAudit()">
                 <select id="audit-filter" onchange="filterAudit()">
                     <option value="">All actions</option>
                     <option value="approved">Approved</option>
@@ -99,41 +60,57 @@
                 </select>
             </div>
 
-            <table id="audit-table">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Student Name</th>
-                        <th>Category</th>
-                        <th>Amount</th>
-                        <th>Reviewed By</th>
-                        <th>Action Taken</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in audit %}
-                    <tr data-student="{{ log.student_name }}" data-category="{{ log.category }}" data-action="{{ log.action }}">
-                        <td style="color: var(--text-muted);">{{ log.actioned_at[:16] }}</td>
-                        <td><strong>{{ log.student_name }}</strong></td>
-                        <td>{{ log.category }}</td>
-                        <td>₹{{ "{:,.0f}".format(log.amount) }}</td>
-                        <td style="color: var(--text-muted);">{{ log.admin_name }}</td>
-                        <td>
-                            <span class="status-pill {{ log.action }}">
-                                <i class="fas {% if log.action == 'approved' %}fa-check{% elif log.action == 'rejected' %}fa-times{% else %}fa-undo{% endif %}"></i>
-                                {{ log.action | replace('_', ' ') }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="empty">
-                            No audit entries yet. Actions you take on requests will appear here.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-wrap">
+                <table id="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Student Name</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Reviewed By</th>
+                            <th>Action Taken</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit %}
+                        <tr data-student="{{ log.student_name }}"
+                            data-category="{{ log.category }}"
+                            data-action="{{ log.action }}">
+                            <td>{{ log.actioned_at[:16] }}</td>
+                            <td>
+                                <div class="user-cell">
+                                    <div>{{ log.student_name }}</div>
+                                </div>
+                            </td>
+                            <td>{{ log.category }}</td>
+                            <td><span class="amount">₹{{ "{:,.0f}".format(log.amount) }}</span></td>
+                            <td>{{ log.admin_name }}</td>
+                            <td>
+                                <span class="status-pill {{ log.action }}">
+                                    <i class="fas
+                                        {% if log.action == 'approved' %}fa-check
+                                        {% elif log.action == 'rejected' %}fa-times
+                                        {% else %}fa-undo
+                                        {% endif %}">
+                                    </i>
+                                    {{ log.action | replace('_', ' ') }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty">
+                                    No audit entries yet. Actions you take on requests will appear here.
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 
@@ -145,11 +122,12 @@
                 const student   = (row.dataset.student  || '').toLowerCase();
                 const category  = (row.dataset.category || '').toLowerCase();
                 const rowAction = row.dataset.action || '';
-                const textOk    = student.includes(search) || category.includes(search);
-                const actionOk  = !action || rowAction === action;
+                const textOk   = student.includes(search) || category.includes(search);
+                const actionOk = !action || rowAction === action;
                 row.style.display = (textOk && actionOk) ? '' : 'none';
             });
         }
     </script>
+
 </body>
 </html>

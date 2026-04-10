@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Claim | Reimbify</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="dashboard-layout">
+
+    <div class="sidebar">
+        <div class="logo">Reimbify</div>
+        <div class="role-label">Admin</div>
+
+        <nav>
+            <a href="/admin/dashboard" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                Dashboard
+            </a>
+            <a href="{{ url_for('all_requests') }}" class="nav-link active">
+                <span class="nav-icon"><i class="fas fa-clock"></i></span>
+                All Requests
+            </a>
+            <a href="{{ url_for('admin_audit') }}" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-history"></i></span>
+                Audit History
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/logout" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div class="page-header">
+            <div>
+                <h1>Review Claim</h1>
+                <p>Assess and action the reimbursement request below.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-scroll-container">
+
+            <a href="{{ url_for('all_requests') }}" class="back">
+                <i class="fas fa-arrow-left"></i> Back to All Requests
+            </a>
+
+            <div class="review-container">
+
+                <div class="claim-details">
+                    <p><b>Request ID</b> #{{ request.id }}</p>
+                    <p><b>Name</b> {{ request.student_name }}</p>
+                    <p><b>Department</b> {{ request.department }}</p>
+                    <p><b>Type</b> {{ request.type }}</p>
+                    <p><b>Category</b> {{ request.category }}</p>
+                    <p><b>Amount</b> ₹{{ "{:,.0f}".format(request.amount) }}</p>
+                    <p><b>Description</b> {{ request.description }}</p>
+                    <p><b>Submitted</b> {{ request.created_at[:10] if request.created_at else '—' }}</p>
+                    <p>
+                        <b>Current Status</b>
+                        <span class="status-pill {{ request.status }}">
+                            {{ request.status | replace('_', ' ') }}
+                        </span>
+                    </p>
+                </div>
+
+                {% if request.proof_url %}
+                <img id="proof" src="{{ request.proof_url }}" alt="Proof document">
+                {% else %}
+                <p class="no-bill">No proof document attached.</p>
+                {% endif %}
+
+                {% if request.status == 'pending' or request.status == 'modification_requested' %}
+
+                <div class="buttons">
+                    <button class="accept" onclick="showPanel('none')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="changes" onclick="showPanel('changes')">
+                        <i class="fas fa-undo"></i> Request Changes
+                    </button>
+                    <button class="reject" onclick="showPanel('reject')">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                </div>
+
+                <!-- Approve form (no comment needed, submits immediately) -->
+                <form id="form-approve"
+                      action="{{ url_for('review_request', request_id=request.id) }}"
+                      method="POST"
+                      style="display:none;">
+                    <input type="hidden" name="action" value="approved">
+                </form>
+
+                <!-- Request Changes panel -->
+                <div class="changes-box" id="changesBox">
+                    <form action="{{ url_for('review_request', request_id=request.id) }}" method="POST">
+                        <input type="hidden" name="action" value="modification_requested">
+                        <textarea name="comment"
+                                  placeholder="Specify what needs to be changed or clarified..."
+                                  required></textarea>
+                        <button type="submit">
+                            <i class="fas fa-paper-plane"></i> Send Change Request
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Reject panel -->
+                <div class="reject-box" id="rejectBox">
+                    <form action="{{ url_for('review_request', request_id=request.id) }}" method="POST">
+                        <input type="hidden" name="action" value="rejected">
+                        <textarea name="comment"
+                                  placeholder="Enter reason for rejection..."
+                                  required></textarea>
+                        <button type="submit">
+                            <i class="fas fa-times"></i> Confirm Rejection
+                        </button>
+                    </form>
+                </div>
+
+                {% else %}
+
+                <!-- Already actioned — show read-only outcome -->
+                <div class="empty-state">
+                    This request has already been actioned.
+                    <a href="{{ url_for('all_requests') }}" class="review-btn" style="margin-left:12px;">
+                        Back to requests
+                    </a>
+                </div>
+
+                {% endif %}
+
+                {% if request.admin_comment %}
+                <div class="request-card" style="margin-top: 20px;">
+                    <div class="admin-comment">
+                        <i class="fas fa-comment-dots"></i>
+                        <strong>Admin note:</strong> {{ request.admin_comment }}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function showPanel(panel) {
+            document.getElementById('changesBox').style.display = 'none';
+            document.getElementById('rejectBox').style.display  = 'none';
+
+            if (panel === 'changes') {
+                document.getElementById('changesBox').style.display = 'block';
+            } else if (panel === 'reject') {
+                document.getElementById('rejectBox').style.display = 'block';
+            } else if (panel === 'none') {
+                // Approve has no comment — submit the hidden form directly
+                document.getElementById('form-approve').submit();
+            }
+        }
+    </script>
+
+</body>
+</html>
