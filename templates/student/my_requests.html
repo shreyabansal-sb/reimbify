@@ -44,11 +44,23 @@
             <!-- Filter buttons call club_my_requests() in app.py via url_for
                  ?status= param is read in the route and filters the list in Python -->
             <div class="filter-section">
-                <span style="color: #475569; font-weight: 500; margin-right: 10px;">Filter By Status:</span>
-                <a href="{{ url_for('student_my_requests', status='all') }}"><button type="button" class="filter-btn">All</button></a>
-                <a href="{{ url_for('student_my_requests', status='pending') }}"><button type="button" class="filter-btn">Pending</button></a>
-                <a href="{{ url_for('student_my_requests', status='approved') }}"><button type="button" class="filter-btn">Approved</button></a>
-                <a href="{{ url_for('student_my_requests', status='rejected') }}"><button type="button" class="filter-btn">Rejected</button></a>
+                <span class="filter-label">Filter By Status:</span>
+
+                <a href="{{ url_for('student_my_requests', status='all') }}">
+                    <button class="filter-btn">All</button>
+                </a>
+
+                <a href="{{ url_for('student_my_requests', status='pending') }}">
+                    <button class="filter-btn">Pending</button>
+                </a>
+
+                <a href="{{ url_for('student_my_requests', status='approved') }}">
+                    <button class="filter-btn">Approved</button>
+                </a>
+
+                <a href="{{ url_for('student_my_requests', status='rejected') }}">
+                    <button class="filter-btn">Rejected</button>
+                </a>
             </div>
 
             <!-- ── ADVANCE TRACKER ── -->
@@ -123,40 +135,57 @@
                  status, admin_comment, created_at, bill_path -->
             {% if requests %}
                 {% for r in requests %}
-                <table width="100%" border="0" cellpadding="20" cellspacing="0" class="request-card">
-                    <tr style="background-color: #f1f5f9;">
-                        <td align="left">
-                            <span style="font-size: 1.1rem; color: #1e293b;"><b>{{ r.description or "No description provided" }}</b></span>
+                <table class="request-card">
+
+                    <tr class="card-header-row">
+                        <td>
+                            <span class="request-card-title">
+                                {{ r.description or "No description provided" }}
+                            </span> 
                         </td>
                         <td align="right">
-                            <span style="font-size: 0.85rem; color: #94a3b8;">{{ r.created_at }}</span>
+                            <span class="request-card-date">
+                                {{ r.created_at }}
+                            </span>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <table width="100%" border="0" cellpadding="8">
+                            <table class="card-fields">
                                 <tr>
-                                    <td width="30%" style="color: #64748b;">Type:</td>
-                                    <td><b>{{ r.type | capitalize }}</b></td>
+                                    <td class="field-label">Type</td>
+                                    <td class="field-value">{{ r.type | capitalize }}</td>
                                 </tr>
-                                <tr>
-                                    <td style="color: #64748b;">Category:</td>
-                                    <td><b>{{ r.category }}</b></td>
+
+                                <tr> <td class="field-label">Event</td>
+                                    <td class="field-value">
+                                        {{ r.event if r.event and r.event != 'N/A' else '—' }}
+                                    </td>
                                 </tr>
+                        
                                 <!-- Event column: clubs always have an event,
                                      show dash only if somehow N/A -->
                                 <tr>
-                                    <td style="color: #64748b;">Event:</td>
-                                    <td><b>{{ r.event if r.event and r.event != 'N/A' else '—' }}</b></td>
+                                    <td class="field-label">Category</td>
+                                    <td class="field-value">{{ r.category }}</td>
                                 </tr>
                                 <tr>
-                                    <td style="color: #64748b;">Amount:</td>
-                                    <td style="font-size: 1.1rem; color: #1e293b;"><b>₹{{ "{:,.2f}".format(r.amount) }}</b></td>
+                                    <td class="field-label">Amount</td>
+                                    <td class="field-amount">
+                                        ₹{{ "{:,.2f}".format(r.amount) }}
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="color: #64748b;">Status:</td>
-                                    <td class="{% if r.status == 'approved' %}status-approved{% elif r.status == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
-                                        {{ r.status | replace('_', ' ') | upper }}
+                                    <td class="field-label">Status</td>
+                                    <td class="
+                                        {% if r.status == 'approved' %}
+                                            status-approved
+                                        {% elif r.status == 'rejected' %}
+                                            status-rejected
+                                        {% else %}
+                                            status-pending
+                                        {% endif %}
+                                    ">
                                     </td>
                                 </tr>
                                 
@@ -164,9 +193,11 @@
                                      stored in requests.admin_comment, set by update_request_status() -->
                                 {% if r.admin_comment %}
                                 <tr>
-                                    <td style="color: #64748b;">Admin Comment:</td>
-                                    <td style="background-color: #fffbeb; border-radius: 4px; padding: 10px; font-style: italic; font-size: 0.9rem;">
-                                        {{ r.admin_comment }}
+                                    <td class="field-label">Admin Comment</td>
+                                    <td>
+                                        <div class="admin-comment">
+                                            {{ r.admin_comment }}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endif %}
