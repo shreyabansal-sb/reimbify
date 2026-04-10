@@ -2,275 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Requests | Reimbify</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --sidebar-bg: #1e293b;
-            --card-bg: #ffffff;
-            --primary: #3b82f6;
-            --danger: #ef4444;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-light: rgba(0,0,0,0.10);
-            --border-medium: rgba(0,0,0,0.18);
-            --radius-md: 8px;
-            --radius-lg: 12px;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            background: var(--sidebar-bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            position: fixed;
-            height: 100vh;
-        }
-        .sidebar h2 {
-            font-size: 1.5rem;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .nav-link {
-            text-decoration: none;
-            color: #cbd5e1;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.2s;
-        }
-        .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
-        .nav-link.active { background: rgba(255,255,255,0.13); color: white; }
-        .nav-link .nav-left { display: flex; align-items: center; gap: 10px; }
-        .badge {
-            background: var(--danger);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* MAIN */
-        .main-content { margin-left: 260px; flex: 1; padding: 40px; }
-
-        .page-header { margin-bottom: 1.75rem; }
-        .page-header h1 { font-size: 1.8rem; font-weight: 600; margin: 0; }
-        .page-header p  { font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; }
-
-        /* Filter bar */
-        .filter-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 1.25rem;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            padding: 6px 16px;
-            font-size: 12px;
-            border: 0.5px solid var(--border-medium);
-            border-radius: var(--radius-md);
-            background: var(--card-bg);
-            color: var(--text-muted);
-            cursor: pointer;
-            font-family: inherit;
-            transition: background 0.1s;
-        }
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--text-main);
-            color: #fff;
-            border-color: var(--text-main);
-        }
-
-        /* Table */
-        .table-wrap {
-            background: var(--card-bg);
-            border: 0.5px solid var(--border-light);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            table-layout: fixed;
-        }
-        th {
-            padding: 10px 16px;
-            text-align: left;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: #f8fafc;
-            border-bottom: 0.5px solid var(--border-light);
-        }
-        td {
-            padding: 13px 16px;
-            border-bottom: 0.5px solid var(--border-light);
-            vertical-align: middle;
-        }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafaf8; }
-
-        .badge-status {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 99px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        .badge-status.pending              { background: #FAEEDA; color: #854F0B; }
-        .badge-status.approved             { background: #EAF3DE; color: #3B6D11; }
-        .badge-status.rejected             { background: #FCEBEB; color: #A32D2D; }
-        .badge-status.modification_requested { background: #EEF0FF; color: #3730A3; }
-
-        .type-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            background: #f1f5f9;
-            color: var(--text-muted);
-            border: 0.5px solid var(--border-light);
-        }
-
-        .user-cell { display: flex; flex-direction: column; gap: 2px; }
-        .amount {
-            font-weight: 500;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-        }
-        .desc-cell {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: var(--text-muted);
-        }
-        .empty {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        /* Review button */
-        .review-btn {
-            display: inline-block;
-            padding: 5px 13px;
-            font-size: 11px;
-            border-radius: 6px;
-            background: var(--primary);
-            color: #fff;
-            text-decoration: none;
-            font-family: inherit;
-            border: none;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .review-btn:hover { background: #2563eb; }
-    </style>
 </head>
-<body>
+
+<body class="dashboard-layout">
 
     <div class="sidebar">
-        <h2><i class="fas fa-university"></i> Reimbify</h2>
+        <div class="logo">Reimbify</div>
+        <div class="role-label">Admin</div>
 
-        <a href="/admin/dashboard" class="nav-link">
-            <span class="nav-left"><i class="fas fa-chart-line"></i> Dashboard</span>
-        </a>
-        <a href="/admin/all-requests" class="nav-link active">
-            <span class="nav-left"><i class="fas fa-clock"></i> All Requests</span>
-            <span class="badge">{{ requests | selectattr('status','equalto','pending') | list | length }}</span>
-        </a>
-        <a href="{{ url_for('admin_audit') }}" class="nav-link">
-            <span class="nav-left"><i class="fas fa-history"></i> Audit History</span>
-        </a>
+        <nav>
+            <a href="/admin/dashboard" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                Dashboard
+            </a>
+            <a href="/admin/all-requests" class="nav-link active">
+                <span class="nav-icon"><i class="fas fa-clock"></i></span>
+                All Requests
+                <span class="badge">{{ requests | selectattr('status','equalto','pending') | list | length }}</span>
+            </a>
+            <a href="{{ url_for('admin_audit') }}" class="nav-link">
+                <span class="nav-icon"><i class="fas fa-history"></i></span>
+                Audit History
+            </a>
+        </nav>
 
-        <div style="margin-top: auto;">
-            <a href="/logout" class="nav-link" style="color: #fca5a5;">
-                <span class="nav-left"><i class="fas fa-sign-out-alt"></i> Logout</span>
+        <div class="sidebar-footer">
+            <a href="/logout" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
     </div>
 
     <div class="main-content">
+
         <div class="page-header">
-            <h1>All Requests</h1>
-            <p>SAU Finance — complete history &nbsp;·&nbsp; {{ user_name }}</p>
+            <div>
+                <h1>All Requests</h1>
+                <p>SAU Finance — complete history &nbsp;·&nbsp; {{ user_name }}</p>
+            </div>
         </div>
 
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterBy('all', this)">All ({{ requests | length }})</button>
-            <button class="filter-btn" onclick="filterBy('pending', this)">Pending ({{ requests | selectattr('status','equalto','pending') | list | length }})</button>
-            <button class="filter-btn" onclick="filterBy('approved', this)">Approved ({{ requests | selectattr('status','equalto','approved') | list | length }})</button>
-            <button class="filter-btn" onclick="filterBy('rejected', this)">Rejected ({{ requests | selectattr('status','equalto','rejected') | list | length }})</button>
-            <button class="filter-btn" onclick="filterBy('modification_requested', this)">Changes Requested ({{ requests | selectattr('status','equalto','modification_requested') | list | length }})</button>
-        </div>
+        <div class="dashboard-scroll-container">
 
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:185px">Requester</th>
-                        <th style="width:95px">Type</th>
-                        <th style="width:95px">Amount</th>
-                        <th style="width:105px">Category</th>
-                        <th>Description</th>
-                        <th style="width:140px">Status</th>
-                        <th style="width:90px">Date</th>
-                        <th style="width:95px">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="req-body">
-                    {% if requests %}
-                        {% for r in requests %}
-                        <tr data-status="{{ r.status }}">
-                            <td>
-                                <div class="user-cell">
-                                    <div style="font-size:13px">{{ r.student_name }}</div>
-                                    <div style="font-size:11px; color:var(--text-muted)">{{ r.department }}</div>
-                                </div>
-                            </td>
-                            <td><span class="type-badge">{{ r.type }}</span></td>
-                            <td><span class="amount">₹{{ "{:,.0f}".format(r.amount) }}</span></td>
-                            <td style="color:var(--text-muted)">{{ r.category }}</td>
-                            <td><div class="desc-cell" title="{{ r.description }}">{{ r.description }}</div></td>
-                            <td><span class="badge-status {{ r.status }}">{{ r.status | replace('_', ' ') }}</span></td>
-                            <td style="color:var(--text-muted); font-size:12px">{{ r.created_at[:10] if r.created_at else '' }}</td>
-                            <td>
-                                <a class="review-btn"
-                                   href="review.html?id={{ r.id }}&name={{ r.student_name | urlencode }}&type={{ r.type | urlencode }}&amount={{ r.amount }}&category={{ r.category | urlencode }}&desc={{ r.description | urlencode }}&status={{ r.status }}&proof={{ r.proof_url | default('') | urlencode }}">
-                                    Review
-                                </a>
-                            </td>
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterBy('all', this)">
+                    All ({{ requests | length }})
+                </button>
+                <button class="filter-btn" onclick="filterBy('pending', this)">
+                    Pending ({{ requests | selectattr('status','equalto','pending') | list | length }})
+                </button>
+                <button class="filter-btn" onclick="filterBy('approved', this)">
+                    Approved ({{ requests | selectattr('status','equalto','approved') | list | length }})
+                </button>
+                <button class="filter-btn" onclick="filterBy('rejected', this)">
+                    Rejected ({{ requests | selectattr('status','equalto','rejected') | list | length }})
+                </button>
+                <button class="filter-btn" onclick="filterBy('modification_requested', this)">
+                    Changes Requested ({{ requests | selectattr('status','equalto','modification_requested') | list | length }})
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Requester</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="8"><div class="empty">No requests found.</div></td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="req-body">
+                        {% if requests %}
+                            {% for r in requests %}
+                            <tr data-status="{{ r.status }}">
+                                <td>
+                                    <div class="user-cell">
+                                        <div>{{ r.student_name }}</div>
+                                        <div>{{ r.department }}</div>
+                                    </div>
+                                </td>
+                                <td><span class="type-badge">{{ r.type }}</span></td>
+                                <td><span class="amount">₹{{ "{:,.0f}".format(r.amount) }}</span></td>
+                                <td>{{ r.category }}</td>
+                                <td>
+                                    <div class="desc-cell" title="{{ r.description }}">{{ r.description }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge-status {{ r.status }}">
+                                        {{ r.status | replace('_', ' ') }}
+                                    </span>
+                                </td>
+                                <td>{{ r.created_at[:10] if r.created_at else '' }}</td>
+                                <td>
+                                    <a class="review-btn" href="{{ url_for('review_request', request_id=r.id) }}">Review
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty">No requests found.</div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 
@@ -283,5 +131,6 @@
             });
         }
     </script>
+
 </body>
 </html>

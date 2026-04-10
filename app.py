@@ -648,7 +648,28 @@ def all_requests():
     )
 
 
-@app.route('/admin/review/<int:request_id>', methods=['POST'])
+@app.route('/admin/review/<int:request_id>', methods=['GET', 'POST'])
+def review_request(request_id):
+    if not login_required('admin'):
+        return redirect(url_for('login'))
+
+    # ── ADD THIS BLOCK ──
+    if request.method == 'GET':
+        req = get_request_by_id(request_id, None)
+        return render_template(
+            'admin/review_request.html',
+            user_name = session['user_name'],
+            req       = req
+        )
+    # ── END OF ADDITION ──
+
+    # everything below is untouched
+    action   = request.form.get('action')
+    comment  = request.form.get('comment', '')
+    admin_id = session['user_id']
+    update_request_status(request_id, action, admin_id, comment)
+    return redirect(url_for('all_requests'))
+    
 def review_request(request_id):
     """
     Admin approves / rejects / requests modification.
