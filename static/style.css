@@ -318,6 +318,15 @@ body.dashboard-layout {
     overflow: hidden;
 }
 
+/* FIX: Pages without a sidebar (e.g. review page) — collapse to single column */
+body.dashboard-layout.no-sidebar {
+    grid-template-columns: 1fr;
+}
+
+body.dashboard-layout.no-sidebar .sidebar {
+    display: none;
+}
+
 
 /* --- SIDEBAR (identical for student, club & admin) --- */
 .sidebar {
@@ -1196,7 +1205,7 @@ body.dashboard-layout {
    17. REVIEW PAGE
    -------------------------------------------------------------------------- */
 .review-container {
-    max-width: 700px;
+    max-width: 900px;
     margin: 40px auto;
     background: var(--card-bg);
     border: 1px solid var(--border-dim);
@@ -1227,7 +1236,7 @@ body.dashboard-layout {
 }
 
 .claim-details p {
-    margin: 8px 0;
+    margin: 0;
     color: var(--text-light);
 }
 
@@ -1480,4 +1489,131 @@ body.dashboard-layout {
         font-size: 2em !important;
         letter-spacing: 6px;
     }
+}
+
+
+/* --------------------------------------------------------------------------
+   17b. REVIEW PAGE — Additional Styles
+   Ensures review_request.html is fully themed to match the site.
+   -------------------------------------------------------------------------- */
+
+/* Back link within the review scroll area */
+.dashboard-scroll-container .back {
+    color: var(--neon);
+    text-decoration: none;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 60px 10px 60px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-scroll-container .back:hover {
+    text-shadow: 0 0 10px var(--neon);
+    color: var(--text-white);
+}
+
+/* Claim details — label/value pairs */
+.claim-details p {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-dim);
+    font-size: 0.9rem;
+    color: var(--text-light);
+    word-break: break-word;
+}
+
+.claim-details p:last-child {
+    border-bottom: none;
+}
+
+.claim-details b {
+    color: var(--neon);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 800;
+    min-width: 160px;
+    max-width: 160px;
+    flex-shrink: 0;
+}
+
+/* No-bill text — standalone (outside .request-card) */
+.review-container .no-bill {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    border: 1px dashed var(--border-dim);
+    border-radius: var(--radius);
+    margin-bottom: 15px;
+}
+
+/* Admin comment — standalone (outside .request-card) */
+.review-container .admin-comment,
+.review-container .request-card .admin-comment {
+    background: rgba(250, 204, 21, 0.06);
+    border-left: 3px solid var(--yellow);
+    padding: 14px 18px;
+    font-style: italic;
+    color: var(--yellow);
+    font-size: 0.85rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    line-height: 1.5;
+}
+
+.review-container .admin-comment i {
+    margin-right: 6px;
+}
+
+.review-container .admin-comment strong {
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+}
+
+/* Proof image — enhanced frame */
+.review-container #proof {
+    border-radius: var(--radius);
+    background: var(--bg-dark);
+    padding: 4px;
+}
+
+/* Buttons — hover glow refinement */
+.buttons button {
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+}
+
+/* Change/Reject boxes — submit buttons */
+.changes-box button,
+.reject-box button {
+    border-radius: var(--radius);
+    width: 100%;
+}
+
+.changes-box button:hover {
+    box-shadow: 0 0 15px rgba(37, 150, 190, 0.5);
+}
+
+.reject-box button:hover {
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.5);
+}
+
+/* Empty state inside review container */
+.review-container .empty-state {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
