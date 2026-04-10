@@ -10,7 +10,7 @@
 
 <body class="requests-layout">
 
-    <!-- SIDEBAR (IDENTICAL TO DASHBOARD) -->
+<!-- SIDEBAR (IDENTICAL TO DASHBOARD) -->
     <div class="sidebar">
         <div>
             <a href="/student/dashboard" class="logo">REIMBIFY</a>
@@ -29,41 +29,26 @@
         </a>
     </div>
 
-    <!-- MAIN -->
     <div class="main-wrapper">
         <div class="container">
 
-            <!-- HEADER -->
             <div class="header">
                 <div>
-                    <h2>My Requests</h2>
-                    <p>Track all your submissions and their status.</p>
+                    <h2 style="margin:0;">My Requests</h2>
+                    <p style="margin:5px 0 0 0; color: #64748b;">Track all your submissions and their status.</p>
                 </div>
-
-                <a href="/student/new-request" class="btn-new">
-                    + New Request
-                </a>
+                <!-- Points to club new-request route -->
+                <a href="/student/new-request" class="btn">+ New Request</a>
             </div>
 
-            <!-- FILTER -->
+            <!-- Filter buttons call club_my_requests() in app.py via url_for
+                 ?status= param is read in the route and filters the list in Python -->
             <div class="filter-section">
-                <span class="filter-label">Filter By Status:</span>
-
-                <a href="{{ url_for('student_my_requests', status='all') }}">
-                    <button class="filter-btn">All</button>
-                </a>
-
-                <a href="{{ url_for('student_my_requests', status='pending') }}">
-                    <button class="filter-btn">Pending</button>
-                </a>
-
-                <a href="{{ url_for('student_my_requests', status='approved') }}">
-                    <button class="filter-btn">Approved</button>
-                </a>
-
-                <a href="{{ url_for('student_my_requests', status='rejected') }}">
-                    <button class="filter-btn">Rejected</button>
-                </a>
+                <span style="color: #475569; font-weight: 500; margin-right: 10px;">Filter By Status:</span>
+                <a href="{{ url_for('student_my_requests', status='all') }}"><button type="button" class="filter-btn">All</button></a>
+                <a href="{{ url_for('student_my_requests', status='pending') }}"><button type="button" class="filter-btn">Pending</button></a>
+                <a href="{{ url_for('student_my_requests', status='approved') }}"><button type="button" class="filter-btn">Approved</button></a>
+                <a href="{{ url_for('student_my_requests', status='rejected') }}"><button type="button" class="filter-btn">Rejected</button></a>
             </div>
 
             <!-- ── ADVANCE TRACKER ── -->
@@ -133,117 +118,96 @@
     </div>
     {% endif %}
 
-            <!-- REQUESTS -->
+            <!-- requests: filtered list from get_student_requests(user_id)
+                 each row has: id, type, amount, category, event, description,
+                 status, admin_comment, created_at, bill_path -->
             {% if requests %}
                 {% for r in requests %}
-                <table class="request-card">
-
-                    <tr class="card-header-row">
-                        <td>
-                            <span class="request-card-title">
-                                {{ r.description or "No description provided" }}
-                            </span>
+                <table width="100%" border="0" cellpadding="20" cellspacing="0" class="request-card">
+                    <tr style="background-color: #f1f5f9;">
+                        <td align="left">
+                            <span style="font-size: 1.1rem; color: #1e293b;"><b>{{ r.description or "No description provided" }}</b></span>
                         </td>
                         <td align="right">
-                            <span class="request-card-date">
-                                {{ r.created_at }}
-                            </span>
+                            <span style="font-size: 0.85rem; color: #94a3b8;">{{ r.created_at }}</span>
                         </td>
                     </tr>
-
-                    <tr class="card-body-wrap">
+                    <tr>
                         <td colspan="2">
-
-                            <table class="card-fields">
-
+                            <table width="100%" border="0" cellpadding="8">
                                 <tr>
-                                    <td class="field-label">Type</td>
-                                    <td class="field-value">{{ r.type | capitalize }}</td>
+                                    <td width="30%" style="color: #64748b;">Type:</td>
+                                    <td><b>{{ r.type | capitalize }}</b></td>
                                 </tr>
-
                                 <tr>
-                                    <td class="field-label">Category</td>
-                                    <td class="field-value">{{ r.category }}</td>
+                                    <td style="color: #64748b;">Category:</td>
+                                    <td><b>{{ r.category }}</b></td>
                                 </tr>
-
+                                <!-- Event column: clubs always have an event,
+                                     show dash only if somehow N/A -->
                                 <tr>
-                                    <td class="field-label">Event</td>
-                                    <td class="field-value">
-                                        {{ r.event if r.event and r.event != 'N/A' else '—' }}
-                                    </td>
+                                    <td style="color: #64748b;">Event:</td>
+                                    <td><b>{{ r.event if r.event and r.event != 'N/A' else '—' }}</b></td>
                                 </tr>
-
                                 <tr>
-                                    <td class="field-label">Amount</td>
-                                    <td class="field-amount">
-                                        ₹{{ "{:,.2f}".format(r.amount) }}
-                                    </td>
+                                    <td style="color: #64748b;">Amount:</td>
+                                    <td style="font-size: 1.1rem; color: #1e293b;"><b>₹{{ "{:,.2f}".format(r.amount) }}</b></td>
                                 </tr>
-
                                 <tr>
-                                    <td class="field-label">Status</td>
-                                    <td class="
-                                        {% if r.status == 'approved' %}
-                                            status-approved
-                                        {% elif r.status == 'rejected' %}
-                                            status-rejected
-                                        {% else %}
-                                            status-pending
-                                        {% endif %}
-                                    ">
+                                    <td style="color: #64748b;">Status:</td>
+                                    <td class="{% if r.status == 'approved' %}status-approved{% elif r.status == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
                                         {{ r.status | replace('_', ' ') | upper }}
                                     </td>
                                 </tr>
-
+                                
+                                <!-- admin_comment only shows if admin left a note
+                                     stored in requests.admin_comment, set by update_request_status() -->
                                 {% if r.admin_comment %}
                                 <tr>
-                                    <td class="field-label">Admin Comment</td>
-                                    <td>
-                                        <div class="admin-comment">
-                                            {{ r.admin_comment }}
-                                        </div>
+                                    <td style="color: #64748b;">Admin Comment:</td>
+                                    <td style="background-color: #fffbeb; border-radius: 4px; padding: 10px; font-style: italic; font-size: 0.9rem;">
+                                        {{ r.admin_comment }}
                                     </td>
                                 </tr>
                                 {% endif %}
 
+                                <tr>
+                                    <td colspan="2" align="center">
+                                        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+                                        <!-- bill_path: from LEFT JOIN with bills table in get_student_requests()
+                                             None if no bill uploaded yet -->
+                                        {% if r.bill_path %}
+                                            <a href="{{ url_for('static', filename=r.bill_path.replace('static/', '')) }}" target="_blank" style="text-decoration: none;">
+                                                <button type="button" class="filter-btn" style="background: #1e293b; color: white; border: none;">
+                                                    <i class="fas fa-file-invoice"></i> View Uploaded Bill
+                                                </button>
+                                            </a>
+                                        {% else %}
+                                            <span style="font-size: 0.85rem; color: #94a3b8;">No bill attached</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
                             </table>
-
-                            <hr class="card-divider">
                         </td>
                     </tr>
-
-                    <tr class="bill-row">
-                        <td colspan="2">
-                            {% if r.bill_path %}
-                                <a href="{{ url_for('static', filename=r.bill_path.replace('static/', '')) }}" target="_blank">
-                                    <button class="bill-btn">
-                                        <i class="fas fa-file-invoice"></i> View Uploaded Bill
-                                    </button>
-                                </a>
-                            {% else %}
-                                <span class="no-bill">No bill attached</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-
                 </table>
                 {% endfor %}
-            {% else %}
-
-                <div class="empty-state">
-                    <i class="fas fa-folder-open"></i>
-                    <p>No requests found in this category.</p>
+                {% else %}
+                <div style="background: white; padding: 40px; border-radius: 12px; text-align: center; border: 1px dashed #cbd5e1;">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                    <p style="color: #64748b;">No requests found in this category.</p>
                 </div>
-            {% endif %}
-
-            <footer style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <p style="font-size: 0.85rem; color: #94a3b8;">
-                    REIMBIFY &bull; Team Technica &copy; 2026 &bull; Smart Campus Hackathon
-                </p>
-            </footer>
+                {% endif %}
+                
+                <footer style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                    <p style="font-size: 0.85rem; color: #94a3b8;">
+                        REIMBIFY &bull; Team Technica &copy; 2026 &bull; Smart Campus Hackathon
+                    </p>
+                </footer>
 
         </div>
     </div>
 
 </body>
 </html>
+
