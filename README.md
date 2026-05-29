@@ -66,7 +66,7 @@ Policy limits (clubs): ₹25,000/claim · ₹15,000 hospitality · ₹10,000 log
 | OCR / Bill scanning | Google Cloud Vision API |
 | Authentication | Flask sessions (server-side, role-based) |
 | File uploads | Werkzeug secure file handling |
-| Deployment | Render-ready (host=0.0.0.0, port 5000) |
+| Deployment | Render-ready |
 
 ---
 
